@@ -1,0 +1,14 @@
+<job id="membershipRemovalJob">
+    <step id="firstChunkStep" >
+        <chunk item-count="2">
+            <reader ref="arrayItemReader"/>
+            <processor ref="lookupUserRepositoriesProcessor"/>
+<!--            <processor ref="backupRepositoriesProcessor"/>-->
+            <writer ref="sampleWriter"/>
+        </chunk>
+    </step>
+
+    <step id="removalProcessStep">
+        <batchlet ref="membershipRemovalBatchlet"/>
+    </step>
+</job>

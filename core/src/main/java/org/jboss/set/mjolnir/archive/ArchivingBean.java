@@ -1,11 +1,12 @@
 package org.jboss.set.mjolnir.archive;
 
-import org.eclipse.egit.github.core.Repository;
+import org.jboss.logging.Logger;
 
 public class ArchivingBean {
 
+    private Logger logger = Logger.getLogger(getClass());
+
     public void createRepositoryMirror(String repoUrl) {
-        Repository repository;
-//        repository.getParent()
+        logger.infof("Archiving %s", repoUrl);
     }
 }

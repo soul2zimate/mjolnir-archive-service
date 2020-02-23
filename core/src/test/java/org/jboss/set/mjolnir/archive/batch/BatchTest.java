@@ -6,7 +6,6 @@ import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
-
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
@@ -17,9 +16,9 @@ public class BatchTest {
     private static final int THREAD_SLEEP = 1000;
 
     @Test
-    public void givenChunk_thenBatch_completesWithSuccess() throws Exception {
+    public void testBatch() throws Exception {
         JobOperator jobOperator = BatchRuntime.getJobOperator();
-        long executionId = jobOperator.start("simpleChunk", new Properties());
+        long executionId = jobOperator.start("membershipRemovalJob", new Properties());
         JobExecution jobExecution = jobOperator.getJobExecution(executionId);
         jobExecution = keepTestAlive(jobExecution);
         assertEquals(jobExecution.getBatchStatus(), BatchStatus.COMPLETED);

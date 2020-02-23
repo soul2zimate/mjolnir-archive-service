@@ -1,9 +1,0 @@
-<job id="simpleChunk">
-    <step id="firstChunkStep" >
-        <chunk>
-            <reader ref="arrayItemReader"/>
-            <processor ref="lookupUserRepositoriesProcessor"/>
-            <writer ref="sampleWriter"/>
-        </chunk>
-    </step>
-</job>
