@@ -2,14 +2,18 @@ package org.jboss.set.mjolnir.archive.domain;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -20,15 +24,21 @@ import java.util.List;
  */
 @NamedQueries({
         @NamedQuery(name = UserRemoval.FIND_REMOVALS_TO_PROCESS,
-                query = "SELECT r FROM UserRemoval r WHERE r.started IS NULL")
+                query = "SELECT r FROM UserRemoval r WHERE r.started IS NULL" +
+                        " AND (remove_on <= CURRENT_DATE or remove_on IS NULL)"),
+        @NamedQuery(name = UserRemoval.MARK_STARTED_REMOVALS,
+                query = "UPDATE UserRemoval SET started = CURRENT_TIMESTAMP WHERE id IN :removalIds")
 })
 @Entity
 @Table(name = "user_removals")
 public class UserRemoval {
 
     public static final String FIND_REMOVALS_TO_PROCESS = "UserRemoval.findRemovalsToProcess";
+    public static final String MARK_STARTED_REMOVALS = "UserRemoval.markStartedRemovals";
 
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_removals_generator")
+    @SequenceGenerator(name="user_removals_generator", sequenceName = "sq_user_removals")
     private Long id;
 
     private String username;
@@ -36,6 +46,7 @@ public class UserRemoval {
     /**
      * When should the membership be removed?
      */
+    @Column(name = "remove_on")
     private Date removeOn;
 
     @CreationTimestamp
@@ -61,10 +72,6 @@ public class UserRemoval {
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public Date getRemoveOn() {
