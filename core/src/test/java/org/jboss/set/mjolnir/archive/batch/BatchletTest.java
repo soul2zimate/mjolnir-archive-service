@@ -1,13 +1,17 @@
 package org.jboss.set.mjolnir.archive.batch;
 
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Assert;
+import org.jboss.set.mjolnir.archive.domain.UserRemoval;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(CdiTestRunner.class)
 public class BatchletTest {
@@ -18,21 +22,36 @@ public class BatchletTest {
     @Inject
     private MembershipRemovalBatchlet batchlet;
 
-    @Test
-    public void testBatchlet() throws Exception {
-        // TODO: this is just showcase
+    @Before
+    public void setup() throws Exception {
+        // create two sample removals
 
-        Assert.assertNotNull(em);
-        Assert.assertNotNull(batchlet);
+        // use transaction to enforce flush, just calling em.flush() throws an exception...
+        em.getTransaction().begin();
+
+        UserRemoval userRemoval = new UserRemoval();
+        userRemoval.setUsername("thofman");
+        em.persist(userRemoval);
+
+        userRemoval = new UserRemoval();
+        userRemoval.setUsername("lvydra");
+        em.persist(userRemoval);
+
+        em.getTransaction().commit();
+    }
+
+    @Test
+    public void testRemovalsMarked() throws Exception {
+        Query findRemovalsQuery = em.createNamedQuery(UserRemoval.FIND_REMOVALS_TO_PROCESS);
+        //noinspection unchecked
+        List<UserRemoval> removals = findRemovalsQuery.getResultList();
+        assertThat(removals.size()).isEqualTo(2);
 
         batchlet.process();
 
-        Query query = em.createNativeQuery("select * from user_removals");
-//        Query query = em.createNamedQuery(UserRemoval.FIND_REMOVALS_TO_PROCESS);
-        Assert.assertEquals(0, query.getResultList().size());
-
-        query = em.createQuery("SELECT r FROM UserRemoval r WHERE r.started IS NULL");
-        Assert.assertEquals(0, query.getResultList().size());
+        //noinspection unchecked
+        removals = findRemovalsQuery.getResultList();
+        assertThat(removals).isEmpty();
     }
 
     // TODO: running the whole batch would probably need to be tested by an arquillian test, as we would need
