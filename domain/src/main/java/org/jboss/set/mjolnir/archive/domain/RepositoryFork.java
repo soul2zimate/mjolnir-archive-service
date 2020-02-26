@@ -2,9 +2,20 @@ package org.jboss.set.mjolnir.archive.domain;
 
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import java.sql.Timestamp;
 
+/**
+ * Stores information about discovered repository forks of removed user.
+ */
+@Entity
+@Table(name = "repository_fork")
 public class RepositoryFork {
+
+    @Id
+    private Long id;
 
     private String repositoryName;
 
@@ -15,9 +26,9 @@ public class RepositoryFork {
     private String sourceRepositoryUrl;
 
     @CreationTimestamp
-    private LocalDateTime created;
+    private Timestamp created;
 
-    private LocalDateTime archived;
+    private Timestamp archived;
 
     public String getRepositoryName() {
         return repositoryName;
@@ -51,19 +62,19 @@ public class RepositoryFork {
         this.sourceRepositoryUrl = sourceRepositoryUrl;
     }
 
-    public LocalDateTime getCreated() {
+    public Timestamp getCreated() {
         return created;
     }
 
-    public void setCreated(LocalDateTime created) {
+    public void setCreated(Timestamp created) {
         this.created = created;
     }
 
-    public LocalDateTime getArchived() {
+    public Timestamp getArchived() {
         return archived;
     }
 
-    public void setArchived(LocalDateTime archived) {
+    public void setArchived(Timestamp archived) {
         this.archived = archived;
     }
 }
