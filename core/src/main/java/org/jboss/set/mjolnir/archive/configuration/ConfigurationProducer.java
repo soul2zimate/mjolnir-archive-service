@@ -26,21 +26,21 @@ public class ConfigurationProducer {
             PreparedStatement stmt = connection.prepareStatement("select param_name, param_value from application_parameters");
             ResultSet resultSet = stmt.executeQuery();
 
-            Configuration configuration = new Configuration();
+            Configuration.ConfigurationBuilder configurationBuilder = new Configuration.ConfigurationBuilder();
 
             while (resultSet.next()) {
                 String name = resultSet.getString("param_name");
                 String value = resultSet.getString("param_value");
                 switch (name) {
                     case GITHUB_TOKEN_KEY:
-                        configuration.setGithubToken(value);
+                        configurationBuilder.setGitHubToken(value);
                         break;
                     default:
                         logger.infof("Skipping configuration parameter %s", name);
                 }
             }
 
-            return configuration;
+            return configurationBuilder.build();
         } catch (SQLException e) {
             throw new RuntimeException("Can't connect to database", e);
         }
@@ -49,7 +49,7 @@ public class ConfigurationProducer {
     @Produces
     public GitHubClient createGitHubClient(Configuration configuration) {
         GitHubClient gitHubClient = new GitHubClient();
-        gitHubClient.setOAuth2Token(configuration.getGithubToken());
+        gitHubClient.setOAuth2Token(configuration.getGitHubToken());
         return gitHubClient;
     }
 }
