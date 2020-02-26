@@ -26,16 +26,24 @@
         <maven.compiler.source>1.8</maven.compiler.source>
 
         <version.egit>2.1.5</version.egit>
+        <version.jberet>1.0.2.Final</version.jberet>
+        <version.deltaspike>1.9.3</version.deltaspike>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.jboss.bom</groupId>
-                <artifactId>jboss-eap-javaee7</artifactId>
-                <version>7.1.5.GA</version>
+                <groupId>org.wildfly.bom</groupId>
+                <artifactId>wildfly-javaee7</artifactId>
+                <version>11.0.0.Final</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>javax</groupId>
+                <artifactId>javaee-api</artifactId>
+                <version>7.0</version>
             </dependency>
 
             <dependency>
@@ -76,19 +84,19 @@
             <dependency>
                 <groupId>org.jberet</groupId>
                 <artifactId>jberet-core</artifactId>
-                <version>1.0.2.Final</version>
+                <version>${version.jberet}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.jberet</groupId>
                 <artifactId>jberet-support</artifactId>
-                <version>1.0.2.Final</version>
+                <version>${version.jberet}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.jberet</groupId>
                 <artifactId>jberet-se</artifactId>
-                <version>1.0.2.Final</version>
+                <version>${version.jberet}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -107,6 +115,27 @@
                 <groupId>org.jboss.marshalling</groupId>
                 <artifactId>jboss-marshalling</artifactId>
                 <version>2.0.9.Final</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- CDI support in tests -->
+
+            <dependency>
+                <groupId>org.apache.deltaspike.modules</groupId>
+                <artifactId>deltaspike-test-control-module-api</artifactId>
+                <version>${version.deltaspike}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.deltaspike.modules</groupId>
+                <artifactId>deltaspike-test-control-module-impl</artifactId>
+                <version>${version.deltaspike}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.deltaspike.cdictrl</groupId>
+                <artifactId>deltaspike-cdictrl-weld</artifactId>
+                <version>${version.deltaspike}</version>
                 <scope>test</scope>
             </dependency>
 
