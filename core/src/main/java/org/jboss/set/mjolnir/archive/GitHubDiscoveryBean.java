@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Provides discovery of user repositories.
+ */
 public class GitHubDiscoveryBean {
 
     private RepositoryService repositoryService;
@@ -21,7 +24,7 @@ public class GitHubDiscoveryBean {
     }
 
     /**
-     * Find private repositories of given user in given organization.
+     * Find forks of private repositories in given organization that belongs to given user.
      *
      * @param organisation github organization
      * @param githubUser   github username

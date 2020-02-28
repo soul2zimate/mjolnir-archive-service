@@ -3,12 +3,15 @@ package org.jboss.set.mjolnir.archive;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.jboss.logging.Logger;
 import org.jboss.set.mjolnir.archive.batch.GitArchiveRepository;
 
 import java.io.*;
 import java.net.URISyntaxException;
 
 public class ArchivingBean {
+  
+    private Logger logger = Logger.getLogger(getClass());
 
     private UsernamePasswordCredentialsProvider credentialsProvider;
 
@@ -23,6 +26,8 @@ public class ArchivingBean {
      * @return void
      */
     public void createRepositoryMirror(String organization, Repository repository) throws GitAPIException, URISyntaxException {
+        
+        logger.infof("Archiving %s", repository.getCloneUrl());
         /** TODO
          * get parent directly from object
          */
