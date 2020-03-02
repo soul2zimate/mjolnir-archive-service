@@ -4,6 +4,8 @@ drop sequence if exists sq_github_orgs;
 drop sequence if exists sq_github_teams;
 drop sequence if exists sq_users;
 
+alter table if exists github_teams drop constraint if exists FK_GITHUB_TEAMS_ORG_ID;
+
 drop table if exists repository_forks;
 drop table if exists user_removals;
 drop table if exists github_orgs;
