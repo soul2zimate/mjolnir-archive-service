@@ -6,6 +6,7 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.jboss.logging.Logger;
 import org.jboss.set.mjolnir.archive.batch.GitArchiveRepository;
 
+import javax.inject.Inject;
 import java.io.*;
 import java.net.URISyntaxException;
 
@@ -15,6 +16,7 @@ public class ArchivingBean {
 
     private UsernamePasswordCredentialsProvider credentialsProvider;
 
+    @Inject
     public ArchivingBean(UsernamePasswordCredentialsProvider credentialsProvider) {
         this.credentialsProvider = credentialsProvider;
     }
@@ -26,7 +28,6 @@ public class ArchivingBean {
      * @return void
      */
     public void createRepositoryMirror(String organization, Repository repository) throws GitAPIException, URISyntaxException {
-        
         logger.infof("Archiving %s", repository.getCloneUrl());
         /** TODO
          * get parent directly from object
