@@ -1,6 +1,7 @@
 package org.jboss.set.mjolnir.archive.configuration;
 
 import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.jboss.logging.Logger;
 
 import javax.annotation.Resource;
@@ -51,5 +52,11 @@ public class ConfigurationProducer {
         GitHubClient gitHubClient = new GitHubClient();
         gitHubClient.setOAuth2Token(configuration.getGitHubToken());
         return gitHubClient;
+    }
+
+    @Produces
+    public UsernamePasswordCredentialsProvider createUsernamePasswordCredentialsProvider(Configuration configuration) {
+        UsernamePasswordCredentialsProvider usernamePasswordCredentialsProvider = new UsernamePasswordCredentialsProvider("token", configuration.getGitHubToken());
+        return usernamePasswordCredentialsProvider;
     }
 }
