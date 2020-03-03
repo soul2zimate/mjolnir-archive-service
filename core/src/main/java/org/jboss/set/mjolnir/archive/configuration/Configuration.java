@@ -10,6 +10,7 @@ public class Configuration {
     private String gitHubApiHost;
     private Integer gitHubApiPort;
     private String gitHubApiScheme;
+    private String repositoryArchiveRoot;
 
     public Configuration() {
     }
@@ -30,6 +31,10 @@ public class Configuration {
         return gitHubApiScheme;
     }
 
+    public String getRepositoryArchiveRoot() {
+        return repositoryArchiveRoot;
+    }
+
     public static class ConfigurationBuilder {
 
         private Configuration configuration = new Configuration();
@@ -43,6 +48,11 @@ public class Configuration {
             this.configuration.gitHubApiHost = uri.getHost();
             this.configuration.gitHubApiPort = uri.getPort();
             this.configuration.gitHubApiScheme = uri.getScheme();
+            return this;
+        }
+
+        public ConfigurationBuilder setRepositoryArchiveRoot(String repositoryArchiveRoot) {
+            this.configuration.repositoryArchiveRoot = repositoryArchiveRoot;
             return this;
         }
 

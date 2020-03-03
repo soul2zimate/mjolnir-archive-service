@@ -15,6 +15,7 @@ import java.sql.SQLException;
 public class ConfigurationProducer {
 
     private final static String GITHUB_TOKEN_KEY = "github.token";
+    private final static String REPOSITORY_ARCHIVE_ROOT_KEY = "repository.archive.root";
 
     private Logger logger = Logger.getLogger(getClass());
 
@@ -36,6 +37,9 @@ public class ConfigurationProducer {
                     case GITHUB_TOKEN_KEY:
                         configurationBuilder.setGitHubToken(value);
                         break;
+                    case REPOSITORY_ARCHIVE_ROOT_KEY:
+                        configurationBuilder.setRepositoryArchiveRoot(value);
+                        break;
                     default:
                         logger.infof("Skipping configuration parameter %s", name);
                 }
@@ -54,9 +58,4 @@ public class ConfigurationProducer {
         return gitHubClient;
     }
 
-    @Produces
-    public UsernamePasswordCredentialsProvider createUsernamePasswordCredentialsProvider(Configuration configuration) {
-        UsernamePasswordCredentialsProvider usernamePasswordCredentialsProvider = new UsernamePasswordCredentialsProvider("token", configuration.getGitHubToken());
-        return usernamePasswordCredentialsProvider;
-    }
 }
