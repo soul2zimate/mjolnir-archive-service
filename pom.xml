@@ -26,6 +26,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
 
         <version.egit>2.1.5</version.egit>
+        <version.jgit>5.6.1.202002131546-r</version.jgit>
         <version.jberet>1.0.2.Final</version.jberet>
         <version.deltaspike>1.9.3</version.deltaspike>
     </properties>
@@ -50,6 +51,18 @@
                 <groupId>org.eclipse.mylyn.github</groupId>
                 <artifactId>org.eclipse.egit.github.core</artifactId>
                 <version>${version.egit}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.jgit</groupId>
+                <artifactId>org.eclipse.jgit</artifactId>
+                <version>${version.jgit}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>3.9</version>
             </dependency>
 
             <!-- Test dependencies -->

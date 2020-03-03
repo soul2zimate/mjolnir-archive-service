@@ -1,4 +1,4 @@
-package org.jboss.set.mjolnir.archive.batch;
+package org.jboss.set.mjolnir.archive;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -11,19 +11,15 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 public class GitArchiveRepository {
-    Git git;
-    CredentialsProvider credentialsProvider;
 
-    public GitArchiveRepository(String parentRepositoryUrl, File repositoryDirectory, CredentialsProvider credentialsProvider) {
+    private Git git;
+
+    private CredentialsProvider credentialsProvider;
+
+    public GitArchiveRepository(String parentRepositoryUrl, File repositoryDirectory, CredentialsProvider credentialsProvider)
+            throws IOException, GitAPIException {
         this.credentialsProvider = credentialsProvider;
-
-        try {
-            this.git = repositoryDirectory.exists() ?  gitOpen(repositoryDirectory) : gitClone(repositoryDirectory, parentRepositoryUrl);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (GitAPIException e) {
-            e.printStackTrace();
-        }
+        this.git = repositoryDirectory.exists() ?  gitOpen(repositoryDirectory) : gitClone(repositoryDirectory, parentRepositoryUrl);
     }
 
     private Git gitClone(File directory, String originUrl) throws GitAPIException {
