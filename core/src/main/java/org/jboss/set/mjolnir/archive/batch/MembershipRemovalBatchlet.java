@@ -47,6 +47,7 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
         for (UserRemoval removal : removals) {
             try {
                 successful &= processRemoval(removal);
+                flush();
             } catch (Exception e) {
                 // log error to db
                 logError(removal, "Failed to process user: " + removal.getUsername(), e);
@@ -56,7 +57,6 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
                 flush();
                 throw e;
             }
-            flush();
         }
 
         if (successful) {

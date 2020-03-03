@@ -1,5 +1,0 @@
-<job id="membershipRemovalJob">
-    <step id="removalProcessStep">
-        <batchlet ref="org.jboss.set.mjolnir.archive.batch.MembershipRemovalBatchlet"/>
-    </step>
-</job>
