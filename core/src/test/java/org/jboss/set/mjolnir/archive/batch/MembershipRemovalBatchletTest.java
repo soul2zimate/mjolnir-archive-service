@@ -3,6 +3,8 @@ package org.jboss.set.mjolnir.archive.batch;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.assertj.core.groups.Tuple;
+import org.eclipse.egit.github.core.Repository;
+import org.jboss.set.mjolnir.archive.ArchivingBean;
 import org.jboss.set.mjolnir.archive.domain.GitHubOrganization;
 import org.jboss.set.mjolnir.archive.domain.RemovalStatus;
 import org.jboss.set.mjolnir.archive.domain.UserRemoval;
@@ -11,6 +13,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -18,6 +21,8 @@ import javax.persistence.TypedQuery;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @RunWith(CdiTestRunner.class)
 public class MembershipRemovalBatchletTest {
@@ -31,8 +36,11 @@ public class MembershipRemovalBatchletTest {
     @Inject
     private MembershipRemovalBatchlet batchlet;
 
+    @Inject
+    private ArchivingBean archivingBean;
+
     @Before
-    public void setup() throws Exception {
+    public void setup() {
         // create two sample removals
 
         em.getTransaction().begin();
@@ -49,7 +57,7 @@ public class MembershipRemovalBatchletTest {
     }
 
     @Test
-    public void testRemovalsMarked() throws Exception {
+    public void testRemovalsMarked() {
         // verify there are two fresh removals present in the database
         TypedQuery<UserRemoval> findRemovalsQuery = em.createNamedQuery(UserRemoval.FIND_REMOVALS_TO_PROCESS, UserRemoval.class);
         List<UserRemoval> removals = findRemovalsQuery.getResultList();
@@ -125,7 +133,16 @@ public class MembershipRemovalBatchletTest {
                     .contains("Ignoring removal request for user lvydra");
         });
 
-        // TODO: verify that repositories were archived
+        // verify that repositories were archived (ArchivingBean is mocked)
+        ArgumentCaptor<Repository> repositoryArgumentCaptor = ArgumentCaptor.forClass(Repository.class);
+        verify(archivingBean, times(2))
+                .createRepositoryMirror(repositoryArgumentCaptor.capture());
+        assertThat(repositoryArgumentCaptor.getAllValues())
+                .extracting("cloneUrl")
+                .containsOnly("https://github.com/TomasHofman/aphrodite.git",
+                        "https://github.com/TomasHofman/activemq-artemis.git");
+
+        // TODO: verify that user was removed from GitHub organization teams
     }
 
 }

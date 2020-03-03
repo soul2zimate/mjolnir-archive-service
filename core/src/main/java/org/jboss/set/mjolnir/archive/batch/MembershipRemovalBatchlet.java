@@ -162,8 +162,8 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
 
                 logger.infof("Archiving repository %s", repository.generateId());
                 try {
-                    //archivingBean.createRepositoryMirror(repository);
-                } catch (Exception e) { // TODO: change this to a checked exception(s) when archivingBean is ready?
+                    archivingBean.createRepositoryMirror(repository);
+                } catch (Exception e) {
                     logError(removal, "Couldn't archive repository: " + repository.getCloneUrl(), e);
 
                     removal.setStatus(RemovalStatus.FAILED);
