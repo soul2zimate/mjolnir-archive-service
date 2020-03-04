@@ -34,27 +34,11 @@ public class GitHubUserRemovalBean {
 
         List<Team> organizationTeams = teamService.getTeams(organisation);
 
-        organizationTeams.stream()
-                .filter(team -> isUserTeamMember(team.getId(), githubUser))
-                .forEach(team -> removeMemberFromTeam(team, githubUser));
-    }
-
-    private boolean isUserTeamMember(int teamId, String githubUser) {
-        try {
-            return teamService.isMember(teamId, githubUser);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    private void removeMemberFromTeam(Team team, String githubUser) {
-        logger.infof("Removing %s users %s team membership", githubUser, team.getName());
-
-        try {
-            teamService.removeMember(team.getId(), githubUser);
-        } catch (IOException e) {
-            e.printStackTrace();
+        for (Team team : organizationTeams) {
+            if (teamService.isMember(team.getId(), githubUser)) {
+                logger.infof("Removing %s users %s team membership", githubUser, team.getName());
+                teamService.removeMember(team.getId(), githubUser);
+            }
         }
     }
 }
