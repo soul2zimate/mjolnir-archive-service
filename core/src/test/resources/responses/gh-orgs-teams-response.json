@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "node_id": "MDQ6VGVhbTE=",
+    "url": "https://api.github.com/teams/1",
+    "html_url": "https://api.github.com/teams/team1",
+    "name": "Team 1",
+    "slug": "team-1",
+    "description": "A great team.",
+    "privacy": "closed",
+    "permission": "admin",
+    "members_url": "https://api.github.com/teams/1/members{/member}",
+    "repositories_url": "https://api.github.com/teams/1/repos",
+    "parent": null
+  },
+  {
+    "id": 2,
+    "node_id": "MDQ6VGVhbTE=",
+    "url": "https://api.github.com/teams/2",
+    "html_url": "https://api.github.com/teams/team2",
+    "name": "Team 2",
+    "slug": "team-2",
+    "description": "A great team.",
+    "privacy": "closed",
+    "permission": "admin",
+    "members_url": "https://api.github.com/teams/2/members{/member}",
+    "repositories_url": "https://api.github.com/teams/2/repos",
+    "parent": null
+  },
+  {
+    "id": 3,
+    "node_id": "MDQ6VGVhbTE=",
+    "url": "https://api.github.com/teams/3",
+    "html_url": "https://api.github.com/teams/team3",
+    "name": "Team 3",
+    "slug": "team-3",
+    "description": "A great team.",
+    "privacy": "closed",
+    "permission": "admin",
+    "members_url": "https://api.github.com/teams/3/members{/member}",
+    "repositories_url": "https://api.github.com/teams/3/repos",
+    "parent": null
+  }
+]
