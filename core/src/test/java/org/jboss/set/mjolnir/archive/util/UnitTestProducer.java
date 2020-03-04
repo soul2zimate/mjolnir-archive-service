@@ -1,7 +1,9 @@
 package org.jboss.set.mjolnir.archive.util;
 
 import org.eclipse.egit.github.core.client.GitHubClient;
+import org.jboss.set.mjolnir.archive.ArchivingBean;
 import org.jboss.set.mjolnir.archive.configuration.Configuration;
+import org.mockito.Mockito;
 
 import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Disposes;
@@ -31,6 +33,7 @@ public class UnitTestProducer {
         return Persistence.createEntityManagerFactory("mjolnir-archive-service", properties).createEntityManager();
     }
 
+    @SuppressWarnings("unused")
     public void closeEntityManager(@Disposes EntityManager em) {
         if (em.isOpen()) {
             em.close();
@@ -50,6 +53,12 @@ public class UnitTestProducer {
         return new GitHubClient(configuration.getGitHubApiHost(),
                 configuration.getGitHubApiPort(),
                 configuration.getGitHubApiScheme());
+    }
+
+    @Produces
+    @Singleton
+    public ArchivingBean createArchivingBeanMock() {
+        return Mockito.mock(ArchivingBean.class);
     }
 
 }

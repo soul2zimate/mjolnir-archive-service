@@ -17,6 +17,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -69,6 +70,9 @@ public class UserRemoval {
     @JoinColumn(name = "user_removal_id")
     private List<RepositoryFork> forks;
 
+    @OneToMany
+    @JoinColumn(name = "user_removal_id")
+    private List<RemovalLog> logs;
 
     public Long getId() {
         return id;
@@ -128,5 +132,13 @@ public class UserRemoval {
 
     public void setForks(List<RepositoryFork> forks) {
         this.forks = forks;
+    }
+
+    public List<RemovalLog> getLogs() {
+        return logs;
+    }
+
+    public void setLogs(List<RemovalLog> logs) {
+        this.logs = logs;
     }
 }
