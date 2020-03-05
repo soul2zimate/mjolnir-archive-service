@@ -14,7 +14,7 @@ import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.jboss.set.mjolnir.archive.TestUtils.readSampleResponse;
+import static org.jboss.set.mjolnir.archive.util.TestUtils.readSampleResponse;
 import static org.junit.Assert.*;
 
 public class GitHubUserRemovalBeanTestCase {
