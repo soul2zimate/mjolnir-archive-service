@@ -10,8 +10,11 @@
         <class>org.jboss.set.mjolnir.archive.domain.User</class>
         <class>org.jboss.set.mjolnir.archive.domain.GitHubOrganization</class>
         <class>org.jboss.set.mjolnir.archive.domain.GitHubTeam</class>
+
         <properties>
             <property name="javax.persistence.transactionType" value="RESOURCE_LOCAL"/>
+
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL82Dialect" />
 
             <property name="hibernate.jdbc.batch_size" value="50" />
             <property name="hibernate.order_updates" value="true"/>

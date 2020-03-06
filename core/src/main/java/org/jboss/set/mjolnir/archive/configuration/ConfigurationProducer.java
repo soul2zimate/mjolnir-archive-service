@@ -1,17 +1,22 @@
 package org.jboss.set.mjolnir.archive.configuration;
 
 import org.eclipse.egit.github.core.client.GitHubClient;
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.jboss.logging.Logger;
 
-import javax.annotation.Resource;
 import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * Loads configuration from a database.
+ *
+ * Since the default CDI scope (@Dependent) is currently used, a new Configuration instance is created for every
+ * injection - i.e. configuration is reloaded during each batch execution.
+ */
 public class ConfigurationProducer {
 
     private final static String GITHUB_TOKEN_KEY = "github.token";
@@ -19,7 +24,7 @@ public class ConfigurationProducer {
 
     private Logger logger = Logger.getLogger(getClass());
 
-    @Resource(lookup = "java:/app/datasource")
+    @Inject
     private DataSource dataSource;
 
     @Produces
