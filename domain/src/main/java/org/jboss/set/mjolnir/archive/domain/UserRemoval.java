@@ -17,7 +17,6 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,20 +25,18 @@ import java.util.List;
 @NamedQueries({
         @NamedQuery(name = UserRemoval.FIND_REMOVALS_TO_PROCESS,
                 query = "SELECT r FROM UserRemoval r WHERE r.started IS NULL" +
-                        " AND (remove_on <= CURRENT_DATE or remove_on IS NULL)"),
-        @NamedQuery(name = UserRemoval.MARK_STARTED_REMOVALS,
-                query = "UPDATE UserRemoval SET started = CURRENT_TIMESTAMP WHERE id IN :removalIds")
+                        " AND (remove_on <= CURRENT_DATE or remove_on IS NULL)")
 })
 @Entity
 @Table(name = "user_removals")
 public class UserRemoval {
 
     public static final String FIND_REMOVALS_TO_PROCESS = "UserRemoval.findRemovalsToProcess";
-    public static final String MARK_STARTED_REMOVALS = "UserRemoval.markStartedRemovals";
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_removals_generator")
     @SequenceGenerator(name="user_removals_generator", sequenceName = "sq_user_removals")
+    @SuppressWarnings("unused")
     private Long id;
 
     private String username;
@@ -104,10 +101,6 @@ public class UserRemoval {
 
     public Timestamp getCreated() {
         return created;
-    }
-
-    public void setCreated(Timestamp created) {
-        this.created = created;
     }
 
     public Timestamp getCompleted() {

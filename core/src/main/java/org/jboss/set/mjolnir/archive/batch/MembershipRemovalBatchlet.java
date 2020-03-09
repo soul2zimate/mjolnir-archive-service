@@ -15,7 +15,7 @@ import javax.batch.api.AbstractBatchlet;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.persistence.EntityTransaction;
 import javax.persistence.TypedQuery;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -23,12 +23,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Batchlet that handles the user removal process.
+ *
+ * TODO: the batch job is supposed to be started by a scheduler once a day or so.
+ */
 @Named
 public class MembershipRemovalBatchlet extends AbstractBatchlet {
 
     private Logger logger = Logger.getLogger(getClass());
 
-    @PersistenceContext
     @Inject
     private EntityManager em;
 
@@ -41,23 +45,30 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
     @Override
     public String process() {
         // obtain list of users we want to remove the access rights from
+        // (this is going to run in separate transaction)
         List<UserRemoval> removals = loadRemovalsToProcess();
+        logger.infof("Found %d user removal requests.", removals.size());
+
+        EntityTransaction transaction = em.getTransaction();
+        transaction.begin();
 
         boolean successful = true;
         for (UserRemoval removal : removals) {
             try {
                 successful &= processRemoval(removal);
             } catch (Exception e) {
+                successful = false;
+                
                 // log error to db
                 logError(removal, "Failed to process user: " + removal.getUsername(), e);
 
                 removal.setStatus(RemovalStatus.FAILED);
                 em.persist(removal);
-                flush();
-                throw e;
             }
-            flush();
+            em.flush();
         }
+
+        transaction.commit();
 
         if (successful) {
             return "DONE";
@@ -68,7 +79,8 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
 
     List<UserRemoval> loadRemovalsToProcess() {
         // perform in transaction to avoid removals being loaded by two parallel executions
-        em.getTransaction().begin();
+        EntityTransaction transaction = em.getTransaction();
+        transaction.begin();
 
         TypedQuery<UserRemoval> findRemovalsQuery = em.createNamedQuery(UserRemoval.FIND_REMOVALS_TO_PROCESS, UserRemoval.class);
         List<UserRemoval> removals = findRemovalsQuery.getResultList();
@@ -80,7 +92,7 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
             em.persist(removal);
         }
 
-        em.getTransaction().commit();
+        transaction.commit();
 
         return removals;
     }
@@ -133,7 +145,7 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
 
             Set<Repository> repositoriesToArchive;
             try {
-                logger.infof("Looking for repositories belonging to user %s in organization %s",
+                logger.infof("Looking for repositories belonging to user %s that are forks of organization %s repositories.",
                         removal.getUsername(), organization.getName());
                 repositoriesToArchive = discoveryBean.getRepositoriesToArchive(organization.getName(), gitHubUsername);
                 logger.infof("Found following repositories to archive: %s",
@@ -181,11 +193,6 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
         removal.setCompleted(new Timestamp(System.currentTimeMillis()));
         em.persist(removal);
         return true;
-    }
-
-    private void flush() {
-        em.getTransaction().begin();
-        em.getTransaction().commit();
     }
 
     private void logMessage(UserRemoval removal, String message) {

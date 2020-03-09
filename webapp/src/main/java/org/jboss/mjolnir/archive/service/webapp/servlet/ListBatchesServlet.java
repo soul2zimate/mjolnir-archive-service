@@ -1,8 +1,10 @@
 package org.jboss.mjolnir.archive.service.webapp.servlet;
 
 import org.jboss.logging.Logger;
+import org.jboss.mjolnir.archive.service.webapp.Constants;
 
 import javax.batch.operations.JobOperator;
+import javax.batch.operations.NoSuchJobException;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
@@ -14,6 +16,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+/**
+ * Lists log of batch jobs and their states.
+ */
 @WebServlet("/list-batches")
 public class ListBatchesServlet extends HttpServlet {
 
@@ -25,18 +30,22 @@ public class ListBatchesServlet extends HttpServlet {
         ServletOutputStream os = resp.getOutputStream();
 
         JobOperator jobOperator = BatchRuntime.getJobOperator();
-        for (JobInstance jobInstance : jobOperator.getJobInstances(StartBatchServlet.JOB_NAME, 1, 40)) {
-            os.println("JobInstance: " + jobInstance.getJobName() + " " + jobInstance.getInstanceId());
-            for (JobExecution jobExecution : jobOperator.getJobExecutions(jobInstance)) {
-                os.println("JobExecution: " + jobExecution.getJobName()
-                        + "\t" + jobExecution.getExecutionId()
-                        + "\t" + jobExecution.getBatchStatus()
-                        + "\t" + jobExecution.getExitStatus()
-                        + "\t" + jobExecution.getCreateTime()
-                        + "\t" + jobExecution.getStartTime()
-                        + "\t" + jobExecution.getEndTime()
-                );
+        try {
+            for (JobInstance jobInstance : jobOperator.getJobInstances(Constants.BATCH_JOB_NAME, 1, 40)) {
+                os.println("JobInstance: " + jobInstance.getJobName() + " " + jobInstance.getInstanceId());
+                for (JobExecution jobExecution : jobOperator.getJobExecutions(jobInstance)) {
+                    os.println("JobExecution: " + jobExecution.getJobName()
+                            + "\t" + jobExecution.getExecutionId()
+                            + "\t" + jobExecution.getBatchStatus()
+                            + "\t" + jobExecution.getExitStatus()
+                            + "\t" + jobExecution.getCreateTime()
+                            + "\t" + jobExecution.getStartTime()
+                            + "\t" + jobExecution.getEndTime()
+                    );
+                }
             }
+        } catch (NoSuchJobException e) {
+            os.println("No jobs found.");
         }
     }
 }

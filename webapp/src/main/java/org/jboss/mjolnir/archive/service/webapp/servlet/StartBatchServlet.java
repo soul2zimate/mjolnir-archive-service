@@ -1,6 +1,7 @@
 package org.jboss.mjolnir.archive.service.webapp.servlet;
 
 import org.jboss.logging.Logger;
+import org.jboss.mjolnir.archive.service.webapp.Constants;
 
 import javax.batch.operations.JobOperator;
 import javax.batch.operations.NoSuchJobException;
@@ -14,10 +15,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
+/**
+ * Triggers new batch job execution (executions are normally triggered by a scheduler).
+ *
+ * TODO: This should either be disabled, or must require an authorized user.
+ */
 @WebServlet("/start-batch")
 public class StartBatchServlet extends HttpServlet {
-
-    public static final String JOB_NAME = "membershipRemovalJob";
 
     private Logger logger = Logger.getLogger(getClass());
 
@@ -27,7 +31,7 @@ public class StartBatchServlet extends HttpServlet {
 
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         try {
-            List<Long> runningExecutions = jobOperator.getRunningExecutions(JOB_NAME);
+            List<Long> runningExecutions = jobOperator.getRunningExecutions(Constants.BATCH_JOB_NAME);
 
             if (runningExecutions.size() > 0) {
                 resp.getOutputStream().println("Job already running.");
@@ -38,7 +42,7 @@ public class StartBatchServlet extends HttpServlet {
             // pass
         }
 
-        long executionId = jobOperator.start(JOB_NAME, new Properties());
+        long executionId = jobOperator.start(Constants.BATCH_JOB_NAME, new Properties());
         logger.infof("Started job ID %d", executionId);
         resp.getOutputStream().println("Started execution ID: " + executionId);
     }

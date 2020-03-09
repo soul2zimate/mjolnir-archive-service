@@ -11,7 +11,7 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
-import javax.persistence.PersistenceContext;
+import javax.sql.DataSource;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -24,7 +24,6 @@ import java.util.Map;
 public class UnitTestProducer {
 
     @Produces
-    @PersistenceContext
     @Singleton
     public EntityManager createEntityManager() {
         Map<String, String> properties = new HashMap<>();
@@ -38,6 +37,16 @@ public class UnitTestProducer {
         if (em.isOpen()) {
             em.close();
         }
+    }
+
+    /**
+     * This is only needed because the DataSource injection is required by ConfigurationProducer.
+     *
+     * TODO: make ConfigurationProducer use EntityManager instead and remove this?
+     */
+    @Produces
+    public DataSource createDatasource() {
+        return Mockito.mock(DataSource.class);
     }
 
     @Produces
