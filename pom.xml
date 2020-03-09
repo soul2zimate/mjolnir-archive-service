@@ -29,6 +29,7 @@
         <version.jgit>5.6.1.202002131546-r</version.jgit>
         <version.jberet>1.0.2.Final</version.jberet>
         <version.deltaspike>1.9.3</version.deltaspike>
+        <version.j2html>1.4.0</version.j2html>
     </properties>
 
     <dependencyManagement>
@@ -63,6 +64,12 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>3.9</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.j2html</groupId>
+                <artifactId>j2html</artifactId>
+                <version>${version.j2html}</version>
             </dependency>
 
             <!-- Test dependencies -->
