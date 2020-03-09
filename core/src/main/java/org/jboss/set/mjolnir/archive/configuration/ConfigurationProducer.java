@@ -20,7 +20,9 @@ import java.sql.SQLException;
 public class ConfigurationProducer {
 
     private final static String GITHUB_TOKEN_KEY = "github.token";
-    private final static String REPOSITORY_ARCHIVE_ROOT_KEY = "repository.archive.root";
+    private final static String REPOSITORY_ARCHIVE_ROOT_KEY = "application.archive_root";
+    private final static String UNSUBSCRIBE_USERS = "application.unsubscribe_users";
+    private final static String REPORTING_EMAIL = "application.reporting_email";
 
     private Logger logger = Logger.getLogger(getClass());
 
@@ -45,6 +47,11 @@ public class ConfigurationProducer {
                     case REPOSITORY_ARCHIVE_ROOT_KEY:
                         configurationBuilder.setRepositoryArchiveRoot(value);
                         break;
+                    case UNSUBSCRIBE_USERS:
+                        boolean boolValue = Boolean.parseBoolean(value);
+                        configurationBuilder.setUnsubscribeUsers(boolValue);
+                    case REPORTING_EMAIL:
+                        configurationBuilder.setReportingEmail(value);
                     default:
                         logger.infof("Skipping configuration parameter %s", name);
                 }
