@@ -11,6 +11,8 @@ public class Configuration {
     private Integer gitHubApiPort;
     private String gitHubApiScheme;
     private String repositoryArchiveRoot;
+    private String reportingEmail;
+    private boolean unsubscribeUsers = false;
 
     public Configuration() {
     }
@@ -31,8 +33,26 @@ public class Configuration {
         return gitHubApiScheme;
     }
 
+    /**
+     * Path to the archive directory where user repositories are to be archived.
+     */
     public String getRepositoryArchiveRoot() {
         return repositoryArchiveRoot;
+    }
+
+    /**
+     * Email address where reporting emails will be sent to.
+     */
+    public String getReportingEmail() {
+        return reportingEmail;
+    }
+
+    /**
+     * If true, processed users will be really unsubscribed from the GitHub teams. If false, users will be just
+     * reported (user repositories will still be archived).
+     */
+    public boolean isUnsubscribeUsers() {
+        return unsubscribeUsers;
     }
 
     public static class ConfigurationBuilder {
@@ -54,6 +74,14 @@ public class Configuration {
         public ConfigurationBuilder setRepositoryArchiveRoot(String repositoryArchiveRoot) {
             this.configuration.repositoryArchiveRoot = repositoryArchiveRoot;
             return this;
+        }
+
+        public void setReportingEmail(String reportingEmail) {
+            this.configuration.reportingEmail = reportingEmail;
+        }
+
+        public void setUnsubscribeUsers(boolean unsubscribeUsers) {
+            this.configuration.unsubscribeUsers = unsubscribeUsers;
         }
 
         public Configuration build() {
