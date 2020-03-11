@@ -1,26 +1,22 @@
 package org.jboss.set.mjolnir.archive.mail;
 
 import javax.annotation.Resource;
-import javax.ejb.Stateless;
+import javax.faces.bean.ApplicationScoped;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.*;
 
-@Stateless
+@ApplicationScoped
 public class MailingService {
 
-    private String to;
-
-    private String from;
-
+    private String toAddress;
+    private String fromAddress;
     private String subject;
-
     private String body;
 
-    //TODO: Add SMTP server
-    @Resource (name="")
+    @Resource (mappedName="java:jboss/mail/Default")
     private Session mailSession;
 
     public void send() throws MessagingException {
@@ -31,28 +27,28 @@ public class MailingService {
         mailContent.addBodyPart(mailMessage);
 
         Message message = new MimeMessage(mailSession);
-        message.setFrom(new InternetAddress(from));
-        message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
+        message.setFrom(new InternetAddress(fromAddress));
+        message.addRecipient(Message.RecipientType.TO, new InternetAddress(toAddress));
         message.setSubject(subject);
         message.setContent(mailContent);
 
         Transport.send(message);
     }
 
-    public String getTo() {
-        return to;
+    public String getToAddress() {
+        return toAddress;
     }
 
-    public void setTo(String to) {
-        this.to = to;
+    public void setToAddress(String toAddress) {
+        this.toAddress = toAddress;
     }
 
-    public String getFrom() {
-        return from;
+    public String getFromAddress() {
+        return fromAddress;
     }
 
-    public void setFrom(String from) {
-        this.from = from;
+    public void setFromAddress(String fromAddress) {
+        this.fromAddress= fromAddress;
     }
 
     public String getSubject() {

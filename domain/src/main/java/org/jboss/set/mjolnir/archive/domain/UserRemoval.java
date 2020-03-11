@@ -27,7 +27,7 @@ import java.util.List;
                 query = "SELECT r FROM UserRemoval r WHERE r.started IS NULL" +
                         " AND (remove_on <= CURRENT_DATE or remove_on IS NULL)"),
         @NamedQuery(name = UserRemoval.FIND_FINISHED_REMOVALS,
-                query = "SELECT r FROM UserRemoval r WHERE r.started > :jobStart AND r.status != 'STARTED' ORDER BY r.status DESC, r.username")
+                query = "SELECT r FROM UserRemoval r WHERE (r.completed > :jobStart AND r.status != 'STARTED') OR r.status IN ('FAILED', 'USER_UNKNOWN') ORDER BY r.status DESC, r.username")
 })
 @Entity
 @Table(name = "user_removals")

@@ -1,6 +1,7 @@
 package org.jboss.set.mjolnir.archive.mail;
 
 import org.jboss.logging.Logger;
+import org.jboss.set.mjolnir.archive.configuration.Configuration;
 
 import javax.ejb.Schedule;
 import javax.ejb.Singleton;
@@ -16,6 +17,9 @@ public class ReportScheduler {
     private static final String SUBJECT = "User removals report ";
 
     @Inject
+    private Configuration configuration;
+
+    @Inject
     private MailingService mailingService;
 
     @Inject
@@ -23,8 +27,8 @@ public class ReportScheduler {
 
     @Schedule(dayOfWeek="Sun", hour="0", persistent = false)
     public void sendMail() throws InterruptedException {
-        mailingService.setFrom("sender@report.com");
-        mailingService.setTo("receiver@report.com");
+        mailingService.setFromAddress(configuration.getReportingEmail());
+        mailingService.setToAddress(configuration.getReportingEmail());
         mailingService.setSubject(SUBJECT + new Timestamp(System.currentTimeMillis()));
         mailingService.setBody(mailBodyMessageProducer.composeMessageBody());
 

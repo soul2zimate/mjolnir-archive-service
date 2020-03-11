@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import java.lang.reflect.Field;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.List;
@@ -26,7 +27,7 @@ public class RemovalsReportBeanTestCase {
     private RemovalsReportBean removalsReportBean;
 
     @Before
-    public void setup() {
+    public void setup() throws IllegalAccessException, NoSuchFieldException {
         em.getTransaction().begin();
 
         Timestamp now = new Timestamp(System.currentTimeMillis());
@@ -37,46 +38,35 @@ public class RemovalsReportBeanTestCase {
 
         Timestamp moreThanWeekAgo = new Timestamp(calendar.getTime().getTime());
 
-        UserRemoval userRemoval = new UserRemoval();
-        userRemoval.setUsername("thofman");
-        userRemoval.setStarted(now);
-        userRemoval.setStatus(RemovalStatus.COMPLETED);
+        UserRemoval userRemoval = createUserRemoval("lvydra", now, now, RemovalStatus.COMPLETED);
         em.persist(userRemoval);
 
-        userRemoval = new UserRemoval();
-        userRemoval.setUsername("lvydra");
-        userRemoval.setStarted(now);
-        userRemoval.setStatus(RemovalStatus.COMPLETED);
+        //started before week, but ended, in current interval
+        userRemoval = createUserRemoval("user1", moreThanWeekAgo, now, RemovalStatus.COMPLETED);
         em.persist(userRemoval);
 
-        userRemoval = new UserRemoval();
-        userRemoval.setUsername("user1");
-        userRemoval.setStarted(now);
-        userRemoval.setStatus(RemovalStatus.FAILED);
+        //started and completed in previous interval should be excluded
+        userRemoval = createUserRemoval("user2", moreThanWeekAgo, moreThanWeekAgo, RemovalStatus.COMPLETED);
         em.persist(userRemoval);
 
-        userRemoval = new UserRemoval();
-        userRemoval.setUsername("user2");
-        userRemoval.setStarted(now);
-        userRemoval.setStatus(RemovalStatus.UNKNOWN_USER);
+        //examples ending with failure
+        userRemoval = createUserRemoval("user3", now, now, RemovalStatus.FAILED);
         em.persist(userRemoval);
 
-        userRemoval = new UserRemoval();
-        userRemoval.setUsername("user3");
-        userRemoval.setStarted(now);
-        userRemoval.setStatus(RemovalStatus.STARTED);
+        userRemoval = createUserRemoval("user4", moreThanWeekAgo, now, RemovalStatus.FAILED);
         em.persist(userRemoval);
 
-        userRemoval = new UserRemoval();
-        userRemoval.setUsername("user4");
-        userRemoval.setStarted(moreThanWeekAgo);
-        userRemoval.setStatus(RemovalStatus.FAILED);
+        userRemoval = createUserRemoval("user5", moreThanWeekAgo, moreThanWeekAgo, RemovalStatus.FAILED);
         em.persist(userRemoval);
 
-        userRemoval = new UserRemoval();
-        userRemoval.setUsername("user5");
-        userRemoval.setStarted(moreThanWeekAgo);
-        userRemoval.setStatus(RemovalStatus.COMPLETED);
+        userRemoval = createUserRemoval("user6", now, now, RemovalStatus.UNKNOWN_USER);
+        em.persist(userRemoval);
+
+        //still running should be excluded
+        userRemoval = createUserRemoval("user7", now, now, RemovalStatus.STARTED);
+        em.persist(userRemoval);
+
+        userRemoval = createUserRemoval("user8", moreThanWeekAgo, moreThanWeekAgo, RemovalStatus.STARTED);
         em.persist(userRemoval);
 
         em.getTransaction().commit();
@@ -86,13 +76,31 @@ public class RemovalsReportBeanTestCase {
     public void testGetRemovalsToReport() {
         List<UserRemoval> lastFinishedRemovals = removalsReportBean.getLastFinishedRemovals();
 
-        assertThat(lastFinishedRemovals.size()).isEqualTo(4);
+        assertThat(lastFinishedRemovals.size()).isEqualTo(6);
         assertThat(lastFinishedRemovals)
                 .extracting("username", "status")
                 .containsOnly(
-                        tuple("user2", RemovalStatus.UNKNOWN_USER),
-                        tuple("user1", RemovalStatus.FAILED),
+                        tuple("user6", RemovalStatus.UNKNOWN_USER),
+                        tuple("user3", RemovalStatus.FAILED),
+                        tuple("user4", RemovalStatus.FAILED),
+                        tuple("user5", RemovalStatus.FAILED),
                         tuple("lvydra", RemovalStatus.COMPLETED),
-                        tuple("thofman", RemovalStatus.COMPLETED));
+                        tuple("user1", RemovalStatus.COMPLETED));
+    }
+
+    private UserRemoval createUserRemoval(String user, Timestamp timeStarted, Timestamp timeCompleted, RemovalStatus status) throws NoSuchFieldException, IllegalAccessException {
+        Field completedField = UserRemoval.class.getDeclaredField("completed");
+        completedField.setAccessible(true);
+        Field statusField = UserRemoval.class.getDeclaredField("status");
+        statusField.setAccessible(true);
+
+        UserRemoval userRemoval = new UserRemoval();
+        userRemoval.setUsername(user);
+        userRemoval.setStarted(timeStarted);
+
+        completedField.set(userRemoval, timeCompleted);
+        statusField.set(userRemoval, status);
+
+        return userRemoval;
     }
 }
