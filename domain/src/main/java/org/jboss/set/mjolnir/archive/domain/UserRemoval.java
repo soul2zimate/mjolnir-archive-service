@@ -110,16 +110,13 @@ public class UserRemoval {
         return completed;
     }
 
-    public void setCompleted(Timestamp completed) {
-        this.completed = completed;
-    }
-
     public RemovalStatus getStatus() {
         return status;
     }
 
     public void setStatus(RemovalStatus status) {
         this.status = status;
+        this.completed = new Timestamp(System.currentTimeMillis());
     }
 
     public List<RepositoryFork> getForks() {
