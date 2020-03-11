@@ -50,8 +50,10 @@ public class ConfigurationProducer {
                     case UNSUBSCRIBE_USERS:
                         boolean boolValue = Boolean.parseBoolean(value);
                         configurationBuilder.setUnsubscribeUsers(boolValue);
+                        break;
                     case REPORTING_EMAIL:
                         configurationBuilder.setReportingEmail(value);
+                        break;
                     default:
                         logger.infof("Skipping configuration parameter %s", name);
                 }
