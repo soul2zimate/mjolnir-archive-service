@@ -56,17 +56,25 @@ public class RemovalsReportBeanTestCase {
         userRemoval = createUserRemoval("user4", moreThanWeekAgo, now, RemovalStatus.FAILED);
         em.persist(userRemoval);
 
+        //should be excluded
         userRemoval = createUserRemoval("user5", moreThanWeekAgo, moreThanWeekAgo, RemovalStatus.FAILED);
         em.persist(userRemoval);
 
         userRemoval = createUserRemoval("user6", now, now, RemovalStatus.UNKNOWN_USER);
         em.persist(userRemoval);
 
-        //still running should be excluded
-        userRemoval = createUserRemoval("user7", now, now, RemovalStatus.STARTED);
+        userRemoval = createUserRemoval("user7", moreThanWeekAgo, now, RemovalStatus.UNKNOWN_USER);
         em.persist(userRemoval);
 
-        userRemoval = createUserRemoval("user8", moreThanWeekAgo, moreThanWeekAgo, RemovalStatus.STARTED);
+        //excluded
+        userRemoval = createUserRemoval("user8", moreThanWeekAgo, moreThanWeekAgo, RemovalStatus.UNKNOWN_USER);
+        em.persist(userRemoval);
+
+        //still running should be excluded
+        userRemoval = createUserRemoval("user9", now, now, RemovalStatus.STARTED);
+        em.persist(userRemoval);
+
+        userRemoval = createUserRemoval("user10", moreThanWeekAgo, moreThanWeekAgo, RemovalStatus.STARTED);
         em.persist(userRemoval);
 
         em.getTransaction().commit();
@@ -81,9 +89,9 @@ public class RemovalsReportBeanTestCase {
                 .extracting("username", "status")
                 .containsOnly(
                         tuple("user6", RemovalStatus.UNKNOWN_USER),
+                        tuple("user7", RemovalStatus.UNKNOWN_USER),
                         tuple("user3", RemovalStatus.FAILED),
                         tuple("user4", RemovalStatus.FAILED),
-                        tuple("user5", RemovalStatus.FAILED),
                         tuple("lvydra", RemovalStatus.COMPLETED),
                         tuple("user1", RemovalStatus.COMPLETED));
     }
