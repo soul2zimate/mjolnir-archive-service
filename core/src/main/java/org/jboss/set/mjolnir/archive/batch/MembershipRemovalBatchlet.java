@@ -214,6 +214,7 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
 
         removal.setStatus(RemovalStatus.COMPLETED);
         em.persist(removal);
+        logger.infof("Removal batchlet completed successfully.");
         return true;
     }
 
