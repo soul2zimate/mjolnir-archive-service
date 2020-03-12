@@ -10,7 +10,7 @@ import org.jboss.set.mjolnir.archive.domain.GitHubOrganization;
 import org.jboss.set.mjolnir.archive.domain.RemovalLog;
 import org.jboss.set.mjolnir.archive.domain.RemovalStatus;
 import org.jboss.set.mjolnir.archive.domain.RepositoryFork;
-import org.jboss.set.mjolnir.archive.domain.User;
+import org.jboss.set.mjolnir.archive.domain.RegisteredUser;
 import org.jboss.set.mjolnir.archive.domain.UserRemoval;
 
 import javax.batch.api.AbstractBatchlet;
@@ -110,7 +110,7 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
     }
 
     String findGitHubUsername(String krbName) {
-        List<User> resultList = em.createNamedQuery(User.FIND_BY_KRB_NAME, User.class)
+        List<RegisteredUser> resultList = em.createNamedQuery(RegisteredUser.FIND_BY_KRB_NAME, RegisteredUser.class)
                 .setParameter("krbName", krbName)
                 .setMaxResults(1)
                 .getResultList();

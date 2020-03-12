@@ -11,16 +11,16 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 /**
- * @author Martin Stefanko (mstefank@redhat.com)
+ * Represents user who logged in to Mjolnir UI. Contains mapping between kerberos username and GitHub username.
  */
 @NamedQueries({
-        @NamedQuery(name = User.FIND_BY_KRB_NAME, query = "SELECT u FROM User u WHERE u.kerberosName = :krbName")
+        @NamedQuery(name = RegisteredUser.FIND_BY_KRB_NAME, query = "SELECT u FROM RegisteredUser u WHERE u.kerberosName = :krbName")
 })
 @Entity
 @Table(name = "users")
-public class User {
+public class RegisteredUser {
 
-    public static final String FIND_BY_KRB_NAME = "Users.findByKrbName";
+    public static final String FIND_BY_KRB_NAME = "RegisteredUser.findByKrbName";
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sq_users")
@@ -40,7 +40,7 @@ public class User {
 
     private boolean whitelisted;
 
-    public User() {
+    public RegisteredUser() {
     }
 
     public Long getId() {
