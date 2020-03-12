@@ -18,6 +18,7 @@ import org.mockito.ArgumentCaptor;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
+import java.sql.Date;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,6 +52,12 @@ public class MembershipRemovalBatchletTest {
 
         userRemoval = new UserRemoval();
         userRemoval.setUsername("lvydra");
+        userRemoval.setRemoveOn(new Date(System.currentTimeMillis() - (24 * 3600 * 1000))); // removal date 1 day in past
+        em.persist(userRemoval);
+
+        userRemoval = new UserRemoval();
+        userRemoval.setUsername("future");
+        userRemoval.setRemoveOn(new Date(System.currentTimeMillis() + (24 * 3600 * 1000))); // removal date 1 day in future
         em.persist(userRemoval);
 
         em.getTransaction().commit();
@@ -61,6 +68,9 @@ public class MembershipRemovalBatchletTest {
         // verify there are two fresh removals present in the database
         TypedQuery<UserRemoval> findRemovalsQuery = em.createNamedQuery(UserRemoval.FIND_REMOVALS_TO_PROCESS, UserRemoval.class);
         List<UserRemoval> removals = findRemovalsQuery.getResultList();
+        assertThat(removals)
+                .extracting("username")
+                .containsOnly("thofman", "lvydra");
         assertThat(removals.size()).isEqualTo(2);
 
         // let the batchlet load the removals

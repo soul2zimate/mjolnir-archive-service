@@ -3,6 +3,7 @@ package org.jboss.set.mjolnir.archive.configuration;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.jboss.logging.Logger;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.sql.DataSource;
@@ -13,9 +14,6 @@ import java.sql.SQLException;
 
 /**
  * Loads configuration from a database.
- *
- * Since the default CDI scope (@Dependent) is currently used, a new Configuration instance is created for every
- * injection - i.e. configuration is reloaded during each batch execution.
  */
 public class ConfigurationProducer {
 
@@ -30,6 +28,7 @@ public class ConfigurationProducer {
     private DataSource dataSource;
 
     @Produces
+    @ApplicationScoped
     public Configuration createConfiguration() {
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement stmt = connection.prepareStatement("select param_name, param_value from application_parameters");
@@ -50,8 +49,10 @@ public class ConfigurationProducer {
                     case UNSUBSCRIBE_USERS:
                         boolean boolValue = Boolean.parseBoolean(value);
                         configurationBuilder.setUnsubscribeUsers(boolValue);
+                        break;
                     case REPORTING_EMAIL:
                         configurationBuilder.setReportingEmail(value);
+                        break;
                     default:
                         logger.infof("Skipping configuration parameter %s", name);
                 }
