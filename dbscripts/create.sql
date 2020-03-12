@@ -16,7 +16,6 @@ create sequence sq_repository_forks;
 create table repository_forks (
     id bigint not null,
     user_removal_id bigint not null,
-    archived timestamp,
     created timestamp,
     repository_name varchar(255),
     repository_url varchar(255),

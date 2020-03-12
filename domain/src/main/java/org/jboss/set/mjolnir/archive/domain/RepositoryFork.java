@@ -44,8 +44,6 @@ public class RepositoryFork {
     @CreationTimestamp
     private Timestamp created;
 
-    private Timestamp archived;
-
     public Long getId() {
         return id;
     }
@@ -98,11 +96,4 @@ public class RepositoryFork {
         this.created = created;
     }
 
-    public Timestamp getArchived() {
-        return archived;
-    }
-
-    public void setArchived(Timestamp archived) {
-        this.archived = archived;
-    }
 }
