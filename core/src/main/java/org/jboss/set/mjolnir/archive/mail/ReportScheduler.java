@@ -27,13 +27,13 @@ public class ReportScheduler {
 
     @Schedule(dayOfWeek="Sun", hour="0", persistent = false)
     public void sendMail() throws InterruptedException {
-        mailingService.setFromAddress(configuration.getReportingEmail());
-        mailingService.setToAddress(configuration.getReportingEmail());
-        mailingService.setSubject(SUBJECT + new Timestamp(System.currentTimeMillis()));
-        mailingService.setBody(mailBodyMessageProducer.composeMessageBody());
+        String fromAddress = configuration.getReportingEmail();
+        String toAddress = configuration.getReportingEmail();
+        String subject = SUBJECT + new Timestamp(System.currentTimeMillis());
+        String body = mailBodyMessageProducer.composeMessageBody();
 
         try {
-            mailingService.send();
+            mailingService.send(fromAddress, toAddress, subject, body);
             logger.infof("Report email sent successfully");
         } catch (MessagingException e) {
             logger.errorf(e, "Failure of report email sending");
