@@ -16,6 +16,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.jboss.set.mjolnir.archive.util.TestUtils.createUserRemoval;
 
 @RunWith(CdiTestRunner.class)
 public class RemovalsReportBeanTestCase {
@@ -94,21 +95,5 @@ public class RemovalsReportBeanTestCase {
                         tuple("user4", RemovalStatus.FAILED),
                         tuple("lvydra", RemovalStatus.COMPLETED),
                         tuple("user1", RemovalStatus.COMPLETED));
-    }
-
-    private UserRemoval createUserRemoval(String user, Timestamp timeStarted, Timestamp timeCompleted, RemovalStatus status) throws NoSuchFieldException, IllegalAccessException {
-        Field completedField = UserRemoval.class.getDeclaredField("completed");
-        completedField.setAccessible(true);
-        Field statusField = UserRemoval.class.getDeclaredField("status");
-        statusField.setAccessible(true);
-
-        UserRemoval userRemoval = new UserRemoval();
-        userRemoval.setUsername(user);
-        userRemoval.setStarted(timeStarted);
-
-        completedField.set(userRemoval, timeCompleted);
-        statusField.set(userRemoval, status);
-
-        return userRemoval;
     }
 }

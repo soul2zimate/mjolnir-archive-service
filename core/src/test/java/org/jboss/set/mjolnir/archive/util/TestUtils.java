@@ -1,12 +1,16 @@
 package org.jboss.set.mjolnir.archive.util;
 
 import org.apache.commons.io.FileUtils;
+import org.jboss.set.mjolnir.archive.domain.RemovalStatus;
+import org.jboss.set.mjolnir.archive.domain.UserRemoval;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -53,5 +57,21 @@ public final class TestUtils {
         return FileUtils.readFileToString(
                 Paths.get(resource.toURI()).toFile(),
                 StandardCharsets.UTF_8.name());
+    }
+
+    public static UserRemoval createUserRemoval(String user, Timestamp timeStarted, Timestamp timeCompleted, RemovalStatus status) throws NoSuchFieldException, IllegalAccessException {
+        Field completedField = UserRemoval.class.getDeclaredField("completed");
+        completedField.setAccessible(true);
+        Field statusField = UserRemoval.class.getDeclaredField("status");
+        statusField.setAccessible(true);
+
+        UserRemoval userRemoval = new UserRemoval();
+        userRemoval.setUsername(user);
+        userRemoval.setStarted(timeStarted);
+
+        completedField.set(userRemoval, timeCompleted);
+        statusField.set(userRemoval, status);
+
+        return userRemoval;
     }
 }

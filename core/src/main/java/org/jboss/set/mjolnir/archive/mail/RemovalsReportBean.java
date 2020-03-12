@@ -15,8 +15,6 @@ public class RemovalsReportBean {
     private EntityManager em;
 
     public List<UserRemoval> getLastFinishedRemovals() {
-        em.getTransaction().begin();
-
         TypedQuery<UserRemoval> findRemovalsQuery = em.createNamedQuery(UserRemoval.FIND_FINISHED_REMOVALS, UserRemoval.class);
         findRemovalsQuery.setParameter("jobStart", getLastJobStart());
 
