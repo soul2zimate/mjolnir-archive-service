@@ -25,13 +25,16 @@ import java.util.List;
 @NamedQueries({
         @NamedQuery(name = UserRemoval.FIND_REMOVALS_TO_PROCESS,
                 query = "SELECT r FROM UserRemoval r WHERE r.started IS NULL" +
-                        " AND (remove_on <= CURRENT_DATE or remove_on IS NULL)")
+                        " AND (remove_on <= CURRENT_DATE or remove_on IS NULL)"),
+        @NamedQuery(name = UserRemoval.FIND_FINISHED_REMOVALS,
+                query = "SELECT r FROM UserRemoval r WHERE r.completed > :jobStart AND r.status != 'STARTED' ORDER BY r.status DESC, r.username")
 })
 @Entity
 @Table(name = "user_removals")
 public class UserRemoval {
 
     public static final String FIND_REMOVALS_TO_PROCESS = "UserRemoval.findRemovalsToProcess";
+    public static final String FIND_FINISHED_REMOVALS = "UserRemoval.findFinishedRemovals";
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_removals_generator")
