@@ -21,6 +21,8 @@ public class ConfigurationProducer {
     private final static String REPOSITORY_ARCHIVE_ROOT_KEY = "application.archive_root";
     private final static String UNSUBSCRIBE_USERS = "application.unsubscribe_users";
     private final static String REPORTING_EMAIL = "application.reporting_email";
+    private final static String LDAP_URL = "ldap.url";
+    private final static String LDAP_SEARCH_CONTEXT = "ldap.search_context";
 
     private Logger logger = Logger.getLogger(getClass());
 
@@ -52,6 +54,12 @@ public class ConfigurationProducer {
                         break;
                     case REPORTING_EMAIL:
                         configurationBuilder.setReportingEmail(value);
+                        break;
+                    case LDAP_URL:
+                        configurationBuilder.setLdapUrl(value);
+                        break;
+                    case LDAP_SEARCH_CONTEXT:
+                        configurationBuilder.setLdapSearchContext(value);
                         break;
                     default:
                         logger.infof("Skipping configuration parameter %s", name);

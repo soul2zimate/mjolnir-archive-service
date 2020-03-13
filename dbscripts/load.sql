@@ -7,5 +7,7 @@ insert into application_parameters (param_name, param_value) values ('github.tok
 insert into application_parameters (param_name, param_value) values ('application.reporting_email', 'info@example.com');
 insert into application_parameters (param_name, param_value) values ('application.unsubscribe_users', 'false');
 insert into application_parameters (param_name, param_value) values ('application.archive_root', '/tmp/mjolnir-repository-archive');
+insert into application_parameters (param_name, param_value) values ('ldap.url', 'ldap://ldap.example.com');
+insert into application_parameters (param_name, param_value) values ('ldap.search_context', 'ou=users,dc=example,dc=com');
 
 insert into users (krb_name, github_name) values ('thofman', 'TomasHofman');
