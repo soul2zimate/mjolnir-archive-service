@@ -34,6 +34,11 @@
             <groupId>org.eclipse.mylyn.github</groupId>
             <artifactId>org.eclipse.egit.github.core</artifactId>
         </dependency>
+        <!-- gson is required by egit -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.eclipse.jgit</groupId>

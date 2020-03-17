@@ -1,4 +1,4 @@
-package org.jboss.set.mjolnir.archive;
+package org.jboss.set.mjolnir.archive.github;
 
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.client.GitHubClient;

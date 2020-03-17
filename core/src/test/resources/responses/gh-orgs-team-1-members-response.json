@@ -1,0 +1,8 @@
+[
+  {
+    "login": "bob",
+    "id": 1,
+    "type": "User",
+    "site_admin": false
+  }
+]

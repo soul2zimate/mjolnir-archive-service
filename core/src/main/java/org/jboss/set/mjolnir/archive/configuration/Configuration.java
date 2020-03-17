@@ -12,6 +12,8 @@ public class Configuration {
     private String gitHubApiScheme;
     private String repositoryArchiveRoot;
     private String reportingEmail;
+    private String ldapUrl;
+    private String ldapSearchContext;
     private boolean unsubscribeUsers = false;
 
     public Configuration() {
@@ -45,6 +47,14 @@ public class Configuration {
      */
     public String getReportingEmail() {
         return reportingEmail;
+    }
+
+    public String getLdapUrl() {
+        return ldapUrl;
+    }
+
+    public String getLdapSearchContext() {
+        return ldapSearchContext;
     }
 
     /**
@@ -82,6 +92,14 @@ public class Configuration {
 
         public void setUnsubscribeUsers(boolean unsubscribeUsers) {
             this.configuration.unsubscribeUsers = unsubscribeUsers;
+        }
+
+        public void setLdapUrl(String url) {
+            this.configuration.ldapUrl = url;
+        }
+
+        public void setLdapSearchContext(String context) {
+            this.configuration.ldapSearchContext = context;
         }
 
         public Configuration build() {

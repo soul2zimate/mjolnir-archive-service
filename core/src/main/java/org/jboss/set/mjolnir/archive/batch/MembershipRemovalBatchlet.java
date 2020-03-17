@@ -3,14 +3,14 @@ package org.jboss.set.mjolnir.archive.batch;
 import org.eclipse.egit.github.core.Repository;
 import org.jboss.logging.Logger;
 import org.jboss.set.mjolnir.archive.ArchivingBean;
-import org.jboss.set.mjolnir.archive.GitHubDiscoveryBean;
-import org.jboss.set.mjolnir.archive.GitHubUserRemovalBean;
+import org.jboss.set.mjolnir.archive.github.GitHubDiscoveryBean;
+import org.jboss.set.mjolnir.archive.github.GitHubTeamServiceBean;
 import org.jboss.set.mjolnir.archive.configuration.Configuration;
 import org.jboss.set.mjolnir.archive.domain.GitHubOrganization;
 import org.jboss.set.mjolnir.archive.domain.RemovalLog;
 import org.jboss.set.mjolnir.archive.domain.RemovalStatus;
 import org.jboss.set.mjolnir.archive.domain.RepositoryFork;
-import org.jboss.set.mjolnir.archive.domain.User;
+import org.jboss.set.mjolnir.archive.domain.RegisteredUser;
 import org.jboss.set.mjolnir.archive.domain.UserRemoval;
 
 import javax.batch.api.AbstractBatchlet;
@@ -48,7 +48,7 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
     private ArchivingBean archivingBean;
 
     @Inject
-    private GitHubUserRemovalBean userRemovalBean;
+    private GitHubTeamServiceBean userRemovalBean;
 
     @Override
     public String process() {
@@ -110,7 +110,7 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
     }
 
     String findGitHubUsername(String krbName) {
-        List<User> resultList = em.createNamedQuery(User.FIND_BY_KRB_NAME, User.class)
+        List<RegisteredUser> resultList = em.createNamedQuery(RegisteredUser.FIND_BY_KRB_NAME, RegisteredUser.class)
                 .setParameter("krbName", krbName)
                 .setMaxResults(1)
                 .getResultList();
