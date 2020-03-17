@@ -3,8 +3,8 @@ package org.jboss.set.mjolnir.archive.batch;
 import org.eclipse.egit.github.core.Repository;
 import org.jboss.logging.Logger;
 import org.jboss.set.mjolnir.archive.ArchivingBean;
-import org.jboss.set.mjolnir.archive.GitHubDiscoveryBean;
-import org.jboss.set.mjolnir.archive.GitHubUserRemovalBean;
+import org.jboss.set.mjolnir.archive.github.GitHubDiscoveryBean;
+import org.jboss.set.mjolnir.archive.github.GitHubTeamServiceBean;
 import org.jboss.set.mjolnir.archive.configuration.Configuration;
 import org.jboss.set.mjolnir.archive.domain.GitHubOrganization;
 import org.jboss.set.mjolnir.archive.domain.RemovalLog;
@@ -48,7 +48,7 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
     private ArchivingBean archivingBean;
 
     @Inject
-    private GitHubUserRemovalBean userRemovalBean;
+    private GitHubTeamServiceBean userRemovalBean;
 
     @Override
     public String process() {

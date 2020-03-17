@@ -1,26 +1,28 @@
-package org.jboss.set.mjolnir.archive;
+package org.jboss.set.mjolnir.archive.github;
 
 import org.eclipse.egit.github.core.Team;
+import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
-import org.eclipse.egit.github.core.service.TeamService;
 import org.jboss.logging.Logger;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
- * Provides user memberships removal.
+ * Provides user membership management capabilities.
  */
-public class GitHubUserRemovalBean {
+public class GitHubTeamServiceBean {
 
     private Logger logger = Logger.getLogger(getClass());
 
-    private TeamService teamService;
+    private CustomizedTeamService teamService;
 
     @Inject
-    public GitHubUserRemovalBean(GitHubClient client) {
-        teamService = new TeamService(client);
+    public GitHubTeamServiceBean(GitHubClient client) {
+        teamService = new CustomizedTeamService(client);
     }
 
     /**
@@ -40,5 +42,17 @@ public class GitHubUserRemovalBean {
                 teamService.removeMember(team.getId(), githubUser);
             }
         }
+    }
+
+    /**
+     * Retrieves members of all organization teams.
+     */
+    public Set<User> getAllTeamsMembers(String organization) throws IOException {
+        List<Team> teams = teamService.getTeams(organization);
+        Set<User> members = new HashSet<>();
+        for (Team team : teams) {
+            members.addAll(teamService.getMembers(organization, team.getId()));
+        }
+        return members;
     }
 }

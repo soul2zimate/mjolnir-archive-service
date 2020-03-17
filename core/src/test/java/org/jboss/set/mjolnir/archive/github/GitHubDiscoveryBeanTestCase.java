@@ -1,9 +1,10 @@
-package org.jboss.set.mjolnir.archive;
+package org.jboss.set.mjolnir.archive.github;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.RepositoryService;
+import org.jboss.set.mjolnir.archive.github.GitHubDiscoveryBean;
 import org.jboss.set.mjolnir.archive.util.TestUtils;
 import org.junit.Before;
 import org.junit.Rule;
