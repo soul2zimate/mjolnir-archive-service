@@ -28,6 +28,12 @@ public class MailBodyMessageProducer {
     public String composeMessageBody() {
         List<UserRemoval> lastStartedRemovals = removalsReportBean.getLastFinishedRemovals();
 
+        String body = composeRemovalsTable(lastStartedRemovals);
+
+        return body;
+    }
+
+    private String composeRemovalsTable(List<UserRemoval> lastStartedRemovals) {
         String body = table().withStyle(TABLE_STYLE + TD_STYLE).with(
                 tr().with(
                         th(NAME_LABEL),
