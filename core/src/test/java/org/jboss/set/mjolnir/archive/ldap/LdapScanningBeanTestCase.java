@@ -4,7 +4,6 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.eclipse.egit.github.core.Team;
 import org.jboss.set.mjolnir.archive.domain.RegisteredUser;
-import org.jboss.set.mjolnir.archive.domain.RemovalStatus;
 import org.jboss.set.mjolnir.archive.domain.UserRemoval;
 import org.junit.Assert;
 import org.junit.Before;
@@ -13,9 +12,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
+import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
@@ -26,8 +27,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.jboss.set.mjolnir.archive.util.TestUtils.createUserRemoval;
 import static org.jboss.set.mjolnir.archive.util.TestUtils.readSampleResponse;
+import static org.mockito.Mockito.*;
 
 @RunWith(CdiTestRunner.class)
 public class LdapScanningBeanTestCase {
@@ -110,10 +111,51 @@ public class LdapScanningBeanTestCase {
         registeredUser.setGithubName("bob");
         em.persist(registeredUser);
 
-        em.getTransaction().commit();
-
         List<String> members = usersDetection.getUnregisteredOrganizationMembers();
         assertThat(members).containsOnly("ben");
+
+        em.getTransaction().rollback();
+    }
+
+    @Test
+    public void testWhitelistedUsersWithoutLdapAccount() throws IOException, NamingException, NoSuchFieldException, IllegalAccessException {
+        LdapDiscoveryBean ldapDiscoveryBean = mock(LdapDiscoveryBean.class);
+        doReturn(false).when(ldapDiscoveryBean).checkUserExists("bobNonExisting");    // Mock implementation
+        doReturn(true).when(ldapDiscoveryBean).checkUserExists("jimExisting");
+
+        Field ldapDiscoveryBeanField = LdapScanningBean.class.getDeclaredField("ldapDiscoveryBean");
+        ldapDiscoveryBeanField.setAccessible(true);
+
+        ldapDiscoveryBeanField.set(usersDetection, ldapDiscoveryBean);
+
+        em.getTransaction().begin();
+
+        RegisteredUser registeredUser = new RegisteredUser();
+        registeredUser.setGithubName("bob");
+        registeredUser.setKerberosName("bobNonExisting");
+        registeredUser.setWhitelisted(true);
+        em.persist(registeredUser);
+
+        registeredUser = new RegisteredUser();
+        registeredUser.setGithubName("jim");
+        registeredUser.setKerberosName("jimExisting");
+        registeredUser.setWhitelisted(true);
+        em.persist(registeredUser);
+
+        registeredUser = new RegisteredUser();
+        registeredUser.setGithubName("ben");
+        registeredUser.setWhitelisted(true);
+        em.persist(registeredUser);
+
+        registeredUser = new RegisteredUser();
+        registeredUser.setGithubName("joe");
+        registeredUser.setWhitelisted(false);
+        em.persist(registeredUser);
+
+        Set<String> members = usersDetection.getWhitelistedUsersWithoutLdapAccount();
+        assertThat(members).containsOnly("bob", "ben");
+
+        em.getTransaction().rollback();
     }
 
     @Test

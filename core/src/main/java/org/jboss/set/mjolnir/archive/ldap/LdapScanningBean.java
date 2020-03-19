@@ -94,6 +94,18 @@ public class LdapScanningBean {
         createUserRemovals(usersWithoutLdapAccount);
     }
 
+    public Set<String> getWhitelistedUsersWithoutLdapAccount() throws NamingException {
+        List<RegisteredUser> whitelistedUsers = em.createNamedQuery(RegisteredUser.FIND_WHITELISTED, RegisteredUser.class).getResultList();
+
+        Set<String> whitelistedUsersWithoutLdapAccount = new HashSet<>();
+        for (RegisteredUser whitelistedUser : whitelistedUsers) {
+            if (StringUtils.isBlank(whitelistedUser.getKerberosName()) || !ldapDiscoveryBean.checkUserExists(whitelistedUser.getKerberosName()))
+                whitelistedUsersWithoutLdapAccount.add(whitelistedUser.getGithubName());
+        }
+
+        return whitelistedUsersWithoutLdapAccount;
+    }
+
     /**
      * Collects members of all teams of all registered GitHub organizations.
      */
