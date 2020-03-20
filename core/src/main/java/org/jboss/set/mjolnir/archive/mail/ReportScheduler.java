@@ -7,6 +7,8 @@ import javax.ejb.Schedule;
 import javax.ejb.Singleton;
 import javax.inject.Inject;
 import javax.mail.MessagingException;
+import javax.naming.NamingException;
+import java.io.IOException;
 import java.sql.Timestamp;
 
 @Singleton
@@ -26,7 +28,7 @@ public class ReportScheduler {
     private MailBodyMessageProducer mailBodyMessageProducer;
 
     @Schedule(dayOfWeek="Sun", hour="0", persistent = false)
-    public void sendMail() throws InterruptedException {
+    public void sendMail() throws InterruptedException, IOException, NamingException {
         String fromAddress = configuration.getReportingEmail();
         String toAddress = configuration.getReportingEmail();
         String subject = SUBJECT + new Timestamp(System.currentTimeMillis());

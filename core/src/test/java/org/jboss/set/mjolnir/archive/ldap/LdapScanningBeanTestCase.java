@@ -111,7 +111,7 @@ public class LdapScanningBeanTestCase {
         registeredUser.setGithubName("bob");
         em.persist(registeredUser);
 
-        List<String> members = usersDetection.getUnregisteredOrganizationMembers();
+        Set<String> members = usersDetection.getUnregisteredOrganizationMembers();
         assertThat(members).containsOnly("ben");
 
         em.getTransaction().rollback();
@@ -120,7 +120,7 @@ public class LdapScanningBeanTestCase {
     @Test
     public void testWhitelistedUsersWithoutLdapAccount() throws IOException, NamingException, NoSuchFieldException, IllegalAccessException {
         LdapDiscoveryBean ldapDiscoveryBean = mock(LdapDiscoveryBean.class);
-        doReturn(false).when(ldapDiscoveryBean).checkUserExists("bobNonExisting");    // Mock implementation
+        doReturn(false).when(ldapDiscoveryBean).checkUserExists("bobNonExisting");
         doReturn(true).when(ldapDiscoveryBean).checkUserExists("jimExisting");
 
         Field ldapDiscoveryBeanField = LdapScanningBean.class.getDeclaredField("ldapDiscoveryBean");

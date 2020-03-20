@@ -123,13 +123,13 @@ public class LdapScanningBean {
                 .collect(Collectors.toSet());
     }
 
-    public List<String> getUnregisteredOrganizationMembers() throws IOException {
+    public Set<String> getUnregisteredOrganizationMembers() throws IOException {
         Set<String> allMembers = getAllOrganizationsMembers();
         List<RegisteredUser> registeredUsers = em.createNamedQuery(RegisteredUser.FIND_ALL, RegisteredUser.class).getResultList();
 
-        List<String> unregisteredMembers = allMembers.stream()
+        Set<String> unregisteredMembers = allMembers.stream()
                 .filter(user -> !containsRegisteredUser(user, registeredUsers))
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
 
         return unregisteredMembers;
     }
