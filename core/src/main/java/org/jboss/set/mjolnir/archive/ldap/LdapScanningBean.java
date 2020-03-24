@@ -1,6 +1,8 @@
 package org.jboss.set.mjolnir.archive.ldap;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.Team;
 import org.eclipse.egit.github.core.User;
 import org.jboss.logging.Logger;
 import org.jboss.set.mjolnir.archive.github.GitHubTeamServiceBean;
@@ -15,12 +17,7 @@ import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -97,6 +94,18 @@ public class LdapScanningBean {
         createUserRemovals(usersWithoutLdapAccount);
     }
 
+    public Set<String> getWhitelistedUsersWithoutLdapAccount() throws NamingException {
+        List<RegisteredUser> whitelistedUsers = em.createNamedQuery(RegisteredUser.FIND_WHITELISTED, RegisteredUser.class).getResultList();
+
+        Set<String> whitelistedUsersWithoutLdapAccount = new HashSet<>();
+        for (RegisteredUser whitelistedUser : whitelistedUsers) {
+            if (StringUtils.isBlank(whitelistedUser.getKerberosName()) || !ldapDiscoveryBean.checkUserExists(whitelistedUser.getKerberosName()))
+                whitelistedUsersWithoutLdapAccount.add(whitelistedUser.getGithubName());
+        }
+
+        return whitelistedUsersWithoutLdapAccount;
+    }
+
     /**
      * Collects members of all teams of all registered GitHub organizations.
      */
@@ -112,6 +121,49 @@ public class LdapScanningBean {
         return users.stream()
                 .map(User::getLogin)
                 .collect(Collectors.toSet());
+    }
+
+    public Set<String> getUnregisteredOrganizationMembers() throws IOException {
+        Set<String> allMembers = getAllOrganizationsMembers();
+        List<RegisteredUser> registeredUsers = em.createNamedQuery(RegisteredUser.FIND_ALL, RegisteredUser.class).getResultList();
+
+        Set<String> unregisteredMembers = allMembers.stream()
+                .filter(user -> !containsRegisteredUser(user, registeredUsers))
+                .collect(Collectors.toSet());
+
+        return unregisteredMembers;
+    }
+
+    public List<Team> getAllUsersTeams(String gitHubUser) throws IOException {
+        List<Team> memberTeams = new ArrayList<>();
+
+        List<GitHubOrganization> organizations =
+                em.createNamedQuery(GitHubOrganization.FIND_ALL, GitHubOrganization.class).getResultList();
+
+        List<Team> allTeams = new ArrayList<>();
+        for (GitHubOrganization organization : organizations) {
+            allTeams.addAll(gitHubBean.getTeams(organization.getName()));
+        }
+
+        for (Team team : allTeams) {
+            if (gitHubBean.isMember(gitHubUser, team))
+                memberTeams.add(team);
+        }
+
+        return memberTeams;
+    }
+
+    private boolean containsRegisteredUser(String member, List<RegisteredUser> registeredUsers) {
+        boolean isMember = false;
+
+        for (RegisteredUser registeredUser : registeredUsers) {
+            isMember = member.equals(registeredUser.getGithubName());
+
+            if (isMember)
+                break;
+        }
+
+        return isMember;
     }
 
     /**

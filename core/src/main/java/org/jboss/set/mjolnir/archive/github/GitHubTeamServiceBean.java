@@ -34,10 +34,10 @@ public class GitHubTeamServiceBean {
     public void removeUserFromTeams(String organisation, String githubUser) throws IOException {
         logger.infof("Removing %s users team memberships", githubUser);
 
-        List<Team> organizationTeams = teamService.getTeams(organisation);
+        List<Team> organizationTeams = getTeams(organisation);
 
         for (Team team : organizationTeams) {
-            if (teamService.isMember(team.getId(), githubUser)) {
+            if (isMember(githubUser, team)) {
                 logger.infof("Removing %s users %s team membership", githubUser, team.getName());
                 teamService.removeMember(team.getId(), githubUser);
             }
@@ -54,5 +54,13 @@ public class GitHubTeamServiceBean {
             members.addAll(teamService.getMembers(organization, team.getId()));
         }
         return members;
+    }
+
+    public List<Team> getTeams(String organisation) throws IOException {
+        return teamService.getTeams(organisation);
+    }
+
+    public boolean isMember(String githubUser, Team team) throws IOException {
+        return teamService.isMember(team.getId(), githubUser);
     }
 }

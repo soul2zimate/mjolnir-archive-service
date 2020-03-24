@@ -1,17 +1,23 @@
-package org.jboss.set.mjolnir.archive.mail;
+package org.jboss.set.mjolnir.archive.mail.report;
 
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.jboss.set.mjolnir.archive.domain.RemovalStatus;
 import org.jboss.set.mjolnir.archive.domain.UserRemoval;
+import org.jboss.set.mjolnir.archive.mail.RemovalsReportBean;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
+import javax.naming.NamingException;
 import javax.persistence.EntityManager;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.List;
@@ -20,7 +26,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.jboss.set.mjolnir.archive.util.TestUtils.createUserRemoval;
 
 @RunWith(CdiTestRunner.class)
-public class MailBodyMessageProducerTestCase {
+public class RemovalsReportTableTestCase {
+
+    @Rule
+    public WireMockRule wireMockRule = new WireMockRule(8089);
 
     @Inject
     private EntityManager em;
@@ -29,7 +38,7 @@ public class MailBodyMessageProducerTestCase {
     private RemovalsReportBean removalsReportBean;
 
     @Inject
-    private MailBodyMessageProducer mailBodyMessageProducer;
+    private RemovalsReportTable removalsReportTable;
 
     @Before
     public void setup() throws IllegalAccessException, NoSuchFieldException {
@@ -53,10 +62,10 @@ public class MailBodyMessageProducerTestCase {
     }
 
     @Test
-    public void testComposeMessageBody() {
+    public void testComposeTableBody() {
         List<UserRemoval> lastFinishedRemovals = removalsReportBean.getLastFinishedRemovals();
 
-        String messageBody = mailBodyMessageProducer.composeMessageBody();
+        String messageBody = removalsReportTable.composeTable();
         Document doc = Jsoup.parse(messageBody);
 
         assertThat(doc.select("tr").size()).isEqualTo(lastFinishedRemovals.size() + 1);

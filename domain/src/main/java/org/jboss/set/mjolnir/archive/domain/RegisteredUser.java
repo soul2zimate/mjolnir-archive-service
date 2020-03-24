@@ -14,6 +14,8 @@ import javax.persistence.Table;
  * Represents user who logged in to Mjolnir UI. Contains mapping between kerberos username and GitHub username.
  */
 @NamedQueries({
+        @NamedQuery(name = RegisteredUser.FIND_ALL, query = "SELECT u FROM RegisteredUser u"),
+        @NamedQuery(name = RegisteredUser.FIND_WHITELISTED, query = "SELECT u FROM RegisteredUser u WHERE u.whitelisted IS TRUE"),
         @NamedQuery(name = RegisteredUser.FIND_BY_KRB_NAME, query = "SELECT u FROM RegisteredUser u WHERE u.kerberosName = :krbName"),
         @NamedQuery(name = RegisteredUser.FIND_BY_GITHUB_NAME, query = "SELECT u FROM RegisteredUser u WHERE u.githubName = :githubName")
 })
@@ -21,6 +23,8 @@ import javax.persistence.Table;
 @Table(name = "users")
 public class RegisteredUser {
 
+    public static final String FIND_ALL = "RegisteredUser.findAll";
+    public static final String FIND_WHITELISTED = "RegisteredUser.findWhitelisted";
     public static final String FIND_BY_KRB_NAME = "RegisteredUser.findByKrbName";
     public static final String FIND_BY_GITHUB_NAME = "RegisteredUser.findByGitHubName";
 
