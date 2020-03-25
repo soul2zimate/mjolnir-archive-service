@@ -60,7 +60,7 @@ create sequence sq_removal_logs;
 
 create table removal_logs (
     id bigint default nextval('sq_removal_logs') primary key,
-    user_removal_id bigint not null,
+    user_removal_id bigint,
     message varchar(255),
     stack_trace text
 );
