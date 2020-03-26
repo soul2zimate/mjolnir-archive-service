@@ -3,6 +3,7 @@ package org.jboss.mjolnir.archive.service.webapp;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.Produces;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -40,7 +41,7 @@ public class EntityManagerProducer {
      * Since we use RESOURCE_LOCAL transactions, an entity manager must be created manually. It must not be injected via
      * {@code @PersistenceContext} annotation.
      */
-    @Produces @ApplicationScoped
+    @Produces @RequestScoped
     EntityManager createEntityManager(EntityManagerFactory entityManagerFactory) {
         return entityManagerFactory.createEntityManager();
     }

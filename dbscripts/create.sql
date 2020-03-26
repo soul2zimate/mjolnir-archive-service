@@ -1,27 +1,25 @@
 create sequence sq_user_removals;
 
 create table user_removals (
-    id bigint not null,
+    id bigint default nextval('sq_user_removals') primary key,
     completed timestamp,
     created timestamp,
     remove_on date,
     started timestamp,
     status varchar(255),
-    username varchar(255),
-    primary key (id)
+    username varchar(255)
 );
 
 create sequence sq_repository_forks;
 
 create table repository_forks (
-    id bigint not null,
+    id bigint default nextval('sq_repository_forks') primary key,
     user_removal_id bigint not null,
     created timestamp,
     repository_name varchar(255),
     repository_url varchar(255),
     source_repository_name varchar(255),
-    source_repository_url varchar(255),
-    primary key (id)
+    source_repository_url varchar(255)
 );
 
 alter table repository_forks add constraint fk_repository_forks_user_removal_id foreign key (user_removal_id) references user_removals;
@@ -62,7 +60,7 @@ create sequence sq_removal_logs;
 
 create table removal_logs (
     id bigint default nextval('sq_removal_logs') primary key,
-    user_removal_id bigint not null,
+    user_removal_id bigint,
     message varchar(255),
     stack_trace text
 );

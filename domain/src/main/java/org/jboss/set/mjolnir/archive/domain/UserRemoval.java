@@ -38,7 +38,7 @@ public class UserRemoval {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_removals_generator")
-    @SequenceGenerator(name="user_removals_generator", sequenceName = "sq_user_removals")
+    @SequenceGenerator(name="user_removals_generator", sequenceName = "sq_user_removals", allocationSize = 1)
     @SuppressWarnings("unused")
     private Long id;
 

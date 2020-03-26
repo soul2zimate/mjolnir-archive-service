@@ -22,7 +22,7 @@ public class RepositoryFork {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "repository_forks_generator")
-    @SequenceGenerator(name="repository_forks_generator", sequenceName = "sq_repository_forks")
+    @SequenceGenerator(name="repository_forks_generator", sequenceName = "sq_repository_forks", allocationSize = 1)
     private Long id;
 
     @Column(name = "repository_name")

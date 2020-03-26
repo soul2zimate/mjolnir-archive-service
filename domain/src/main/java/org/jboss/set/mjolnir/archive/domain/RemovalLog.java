@@ -9,7 +9,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -19,7 +18,7 @@ public class RemovalLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "removal_logs_generator")
-    @SequenceGenerator(name="removal_logs_generator", sequenceName = "sq_removal_logs")
+    @SequenceGenerator(name="removal_logs_generator", sequenceName = "sq_removal_logs", allocationSize = 1)
     private Long id;
 
     private String message;
