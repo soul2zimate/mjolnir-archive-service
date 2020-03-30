@@ -48,7 +48,8 @@ create table users (
     github_name varchar(255) unique,
     note varchar(255),
     admin boolean not null default false,
-    whitelisted boolean not null default false
+    whitelisted boolean not null default false,
+    created timestamp default CURRENT_TIMESTAMP
 );
 
 create table application_parameters (
@@ -61,6 +62,7 @@ create sequence sq_removal_logs;
 create table removal_logs (
     id bigint default nextval('sq_removal_logs') primary key,
     user_removal_id bigint,
+    created timestamp default CURRENT_TIMESTAMP,
     message varchar(255),
     stack_trace text
 );
