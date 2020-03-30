@@ -4,8 +4,6 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.eclipse.egit.github.core.Team;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
-import org.jboss.set.mjolnir.archive.github.CustomizedTeamService;
-import org.jboss.set.mjolnir.archive.github.GitHubTeamServiceBean;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
