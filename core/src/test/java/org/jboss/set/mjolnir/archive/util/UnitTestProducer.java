@@ -3,6 +3,7 @@ package org.jboss.set.mjolnir.archive.util;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.jboss.set.mjolnir.archive.ArchivingBean;
 import org.jboss.set.mjolnir.archive.configuration.Configuration;
+import org.jboss.set.mjolnir.archive.ldap.LdapDiscoveryBean;
 import org.mockito.Mockito;
 
 import javax.enterprise.inject.Alternative;
@@ -64,10 +65,18 @@ public class UnitTestProducer {
                 configuration.getGitHubApiScheme());
     }
 
+    // mock following beans for CDI tests
+
     @Produces
     @Singleton
     public ArchivingBean createArchivingBeanMock() {
         return Mockito.mock(ArchivingBean.class);
+    }
+
+    @Produces
+    @Singleton
+    public LdapDiscoveryBean createLdapDiscoveryBean() {
+        return Mockito.mock(LdapDiscoveryBean.class);
     }
 
 }
