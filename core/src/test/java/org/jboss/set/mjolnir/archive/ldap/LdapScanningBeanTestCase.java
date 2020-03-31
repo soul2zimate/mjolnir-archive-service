@@ -1,10 +1,12 @@
 package org.jboss.set.mjolnir.archive.ldap;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import org.apache.deltaspike.core.util.ArraysUtils;
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.eclipse.egit.github.core.Team;
 import org.jboss.set.mjolnir.archive.domain.RegisteredUser;
 import org.jboss.set.mjolnir.archive.domain.UserRemoval;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -16,9 +18,9 @@ import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -28,7 +30,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.jboss.set.mjolnir.archive.util.TestUtils.readSampleResponse;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
 
 @RunWith(CdiTestRunner.class)
 public class LdapScanningBeanTestCase {
@@ -40,10 +42,19 @@ public class LdapScanningBeanTestCase {
     private EntityManager em;
 
     @Inject
-    private LdapScanningBean usersDetection;
+    private LdapScanningBean ldapScanningBean;
+
+    @Inject
+    private LdapDiscoveryBean ldapDiscoveryBeanMock;
 
     @Before
-    public void setup() throws IOException, URISyntaxException {
+    public void setup() throws IOException, URISyntaxException, NamingException {
+        // clear data before each test
+
+        clearData();
+
+
+        // stubs for GitHub API endpoints
 
         stubFor(get(urlPathEqualTo("/api/v3/orgs/testorg/teams"))
                 .willReturn(aResponse()
@@ -82,6 +93,27 @@ public class LdapScanningBeanTestCase {
         stubFor(get(urlPathEqualTo("/api/v3/teams/3/members/bob"))
                 .willReturn(aResponse()
                         .withStatus(204)));
+
+
+        // mock LdapDiscoveryBean behaviour
+
+        doReturn(false).when(ldapDiscoveryBeanMock).checkUserExists("bobNonExisting");
+        doReturn(true).when(ldapDiscoveryBeanMock).checkUserExists("jimExisting");
+        doReturn(false).when(ldapDiscoveryBeanMock).checkUserExists("ben");
+        doReturn(false).when(ldapDiscoveryBeanMock).checkUserExists("bob");
+
+        HashMap<Object, Object> ldapUsersMap = new HashMap<>();
+        ldapUsersMap.put("ben", false);
+        ldapUsersMap.put("bob", false);
+        doReturn(ldapUsersMap).when(ldapDiscoveryBeanMock).checkUsersExists(ArraysUtils.asSet("ben", "bob"));
+    }
+
+    @After
+    public void tearDown() {
+        // don't let a transaction open outside of a test method
+        if (em.getTransaction().isActive()) {
+            em.getTransaction().rollback();
+        }
     }
 
     @Test
@@ -89,9 +121,21 @@ public class LdapScanningBeanTestCase {
         TypedQuery<UserRemoval> query = em.createNamedQuery(UserRemoval.FIND_REMOVALS_TO_PROCESS, UserRemoval.class);
         Assert.assertTrue(query.getResultList().isEmpty());
 
-        usersDetection.createUserRemovals(Arrays.asList("ben", "bob"));
+        // create removals
+        ldapScanningBean.createUserRemovals(Arrays.asList("ben", "bob"));
 
+        // check removals were created
         List<UserRemoval> removals = query.getResultList();
+        assertThat(removals)
+                .extracting("username")
+                .containsOnly("ben", "bob");
+
+        // create the same removals again
+        ldapScanningBean.createUserRemovals(Arrays.asList("ben", "bob"));
+
+        // check that duplicates were not created
+        removals = query.getResultList();
+        assertThat(removals.size()).isEqualTo(2);
         assertThat(removals)
                 .extracting("username")
                 .containsOnly("ben", "bob");
@@ -99,81 +143,93 @@ public class LdapScanningBeanTestCase {
 
     @Test
     public void testAllOrganizationMembers() throws IOException {
-        Set<String> members = usersDetection.getAllOrganizationsMembers();
+        Set<String> members = ldapScanningBean.getAllOrganizationsMembers();
         assertThat(members).containsOnly("bob", "ben");
     }
 
     @Test
     public void testUnregisteredOrganizationMembers() throws IOException {
-        em.getTransaction().begin();
+        createRegisteredUser(null, "bob", false);
 
-        RegisteredUser registeredUser = new RegisteredUser();
-        registeredUser.setGithubName("bob");
-        em.persist(registeredUser);
-
-        Set<String> members = usersDetection.getUnregisteredOrganizationMembers();
+        Set<String> members = ldapScanningBean.getUnregisteredOrganizationMembers();
         assertThat(members).containsOnly("ben");
-
-        em.getTransaction().rollback();
     }
 
     @Test
-    public void testWhitelistedUsersWithoutLdapAccount() throws IOException, NamingException, NoSuchFieldException, IllegalAccessException {
-        LdapDiscoveryBean ldapDiscoveryBean = mock(LdapDiscoveryBean.class);
-        doReturn(false).when(ldapDiscoveryBean).checkUserExists("bobNonExisting");
-        doReturn(true).when(ldapDiscoveryBean).checkUserExists("jimExisting");
+    public void testWhitelistedUsersWithoutLdapAccount() throws NamingException {
+        createRegisteredUser("bobNonExisting", "bob", true);
+        createRegisteredUser("jimExisting", "jim", true);
+        createRegisteredUser(null, "ben", true);
+        createRegisteredUser(null, "joe", false);
 
-        Field ldapDiscoveryBeanField = LdapScanningBean.class.getDeclaredField("ldapDiscoveryBean");
-        ldapDiscoveryBeanField.setAccessible(true);
-
-        ldapDiscoveryBeanField.set(usersDetection, ldapDiscoveryBean);
-
-        em.getTransaction().begin();
-
-        RegisteredUser registeredUser = new RegisteredUser();
-        registeredUser.setGithubName("bob");
-        registeredUser.setKerberosName("bobNonExisting");
-        registeredUser.setWhitelisted(true);
-        em.persist(registeredUser);
-
-        registeredUser = new RegisteredUser();
-        registeredUser.setGithubName("jim");
-        registeredUser.setKerberosName("jimExisting");
-        registeredUser.setWhitelisted(true);
-        em.persist(registeredUser);
-
-        registeredUser = new RegisteredUser();
-        registeredUser.setGithubName("ben");
-        registeredUser.setWhitelisted(true);
-        em.persist(registeredUser);
-
-        registeredUser = new RegisteredUser();
-        registeredUser.setGithubName("joe");
-        registeredUser.setWhitelisted(false);
-        em.persist(registeredUser);
-
-        Set<String> members = usersDetection.getWhitelistedUsersWithoutLdapAccount();
+        Set<String> members = ldapScanningBean.getWhitelistedUsersWithoutLdapAccount();
         assertThat(members).containsOnly("bob", "ben");
-
-        em.getTransaction().rollback();
     }
 
     @Test
     public void testAllUsersTeams() throws IOException {
-        List<Team> teams = usersDetection.getAllUsersTeams("bob");
+        List<Team> teams = ldapScanningBean.getAllUsersTeams("bob");
         assertThat(teams)
                 .extracting("name")
                 .containsOnly("Team 1", "Team 3");
     }
 
     @Test
-    public void testAllOrganization() {
-        usersDetection.createRemovalsForUsersWithoutLdapAccount();
+    public void testCreateRemovalsForUsersWithoutLdapAccount() {
+        createRegisteredUser("bob", "bob", false);
+        createRegisteredUser("ben", "ben", false);
+
+        ldapScanningBean.createRemovalsForUsersWithoutLdapAccount();
 
         TypedQuery<UserRemoval> query = em.createNamedQuery(UserRemoval.FIND_REMOVALS_TO_PROCESS, UserRemoval.class);
         List<UserRemoval> removals = query.getResultList();
         assertThat(removals)
                 .extracting("username")
                 .containsOnly("ben", "bob");
+    }
+
+    @Test
+    public void testDontCreateDuplicateRemovals() {
+        createRegisteredUser("bob", "bob", false);
+        createRegisteredUser("ben", "ben", false);
+        // create already existing removal
+        createUserRemoval("bob");
+
+        ldapScanningBean.createRemovalsForUsersWithoutLdapAccount();
+
+        // verify that the removal for bob is not duplicated
+        TypedQuery<UserRemoval> query = em.createNamedQuery(UserRemoval.FIND_REMOVALS_TO_PROCESS, UserRemoval.class);
+        List<UserRemoval> removals = query.getResultList();
+        assertThat(removals.size()).isEqualTo(2);
+        assertThat(removals)
+                .extracting("username")
+                .containsOnly("ben", "bob");
+    }
+
+    private void createRegisteredUser(String username, String githubName, boolean whitelisted) {
+        RegisteredUser registeredUser = new RegisteredUser();
+        registeredUser.setGithubName(githubName);
+        registeredUser.setKerberosName(username);
+        registeredUser.setWhitelisted(whitelisted);
+
+        em.getTransaction().begin();
+        em.persist(registeredUser);
+        em.getTransaction().commit();
+    }
+
+    private void createUserRemoval(String username) {
+        UserRemoval userRemoval = new UserRemoval();
+        userRemoval.setUsername(username);
+
+        em.getTransaction().begin();
+        em.persist(userRemoval);
+        em.getTransaction().commit();
+    }
+
+    private void clearData() {
+        em.getTransaction().begin();
+        em.createQuery("delete from UserRemoval").executeUpdate();
+        em.createQuery("delete from RegisteredUser").executeUpdate();
+        em.getTransaction().commit();
     }
 }

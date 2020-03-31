@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: BuildConfig
+metadata:
+  name: eap-postgresql-driver-build
+spec:
+  source:
+    git:
+        # TODO: change to jboss-set / master
+        uri: 'https://github.com/TomasHofman/mjolnir-archive-service.git'
+        ref: dev-branch
+    type: Git
+    contextDir: 'openshift/eap-postgresql-driver/'
+  strategy:
+    dockerStrategy:
+      noCache: false
+  output:
+    to:
+      kind: ImageStreamTag
+      name: eap-postgresql-driver:latest
+

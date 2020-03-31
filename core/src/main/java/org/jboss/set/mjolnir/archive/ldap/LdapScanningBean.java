@@ -1,23 +1,28 @@
 package org.jboss.set.mjolnir.archive.ldap;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.Team;
 import org.eclipse.egit.github.core.User;
 import org.jboss.logging.Logger;
-import org.jboss.set.mjolnir.archive.github.GitHubTeamServiceBean;
 import org.jboss.set.mjolnir.archive.domain.GitHubOrganization;
 import org.jboss.set.mjolnir.archive.domain.RegisteredUser;
 import org.jboss.set.mjolnir.archive.domain.RemovalLog;
 import org.jboss.set.mjolnir.archive.domain.UserRemoval;
 import org.jboss.set.mjolnir.archive.domain.repositories.RegisteredUserRepositoryBean;
+import org.jboss.set.mjolnir.archive.github.GitHubTeamServiceBean;
 
 import javax.inject.Inject;
 import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -26,6 +31,7 @@ import java.util.stream.Collectors;
  * This implementation works by querying LDAP database. It should eventually be replaced by an implementation
  * relying on JMS messages.
  */
+@SuppressWarnings("UnnecessaryLocalVariable")
 public class LdapScanningBean {
 
     private final Logger logger = Logger.getLogger(getClass());
@@ -109,7 +115,7 @@ public class LdapScanningBean {
     /**
      * Collects members of all teams of all registered GitHub organizations.
      */
-    public Set<String> getAllOrganizationsMembers() throws IOException {
+    Set<String> getAllOrganizationsMembers() throws IOException {
         List<GitHubOrganization> organizations =
                 em.createNamedQuery(GitHubOrganization.FIND_ALL, GitHubOrganization.class).getResultList();
 
@@ -153,7 +159,7 @@ public class LdapScanningBean {
         return memberTeams;
     }
 
-    private boolean containsRegisteredUser(String member, List<RegisteredUser> registeredUsers) {
+    private static boolean containsRegisteredUser(String member, List<RegisteredUser> registeredUsers) {
         boolean isMember = false;
 
         for (RegisteredUser registeredUser : registeredUsers) {
@@ -167,19 +173,27 @@ public class LdapScanningBean {
     }
 
     /**
-     * Creates and perists UserRemoval objects for given list of usernames.
+     * Creates and persists UserRemoval objects for given list of usernames.
      */
     void createUserRemovals(Collection<String> krbNames) {
-        EntityTransaction transaction = em.getTransaction();
-        transaction.begin();
+        em.getTransaction().begin();
+
+        List<UserRemoval> existingRemovalsToProcess =
+                em.createNamedQuery(UserRemoval.FIND_REMOVALS_TO_PROCESS, UserRemoval.class).getResultList();
+        Set<String> existingUsernamesToProcess =
+                existingRemovalsToProcess.stream().map(UserRemoval::getUsername).collect(Collectors.toSet());
 
         krbNames.forEach(username -> {
-            logger.infof("Creating removal record for user %s", username);
-            UserRemoval removal = new UserRemoval();
-            removal.setUsername(username);
-            em.persist(removal);
+            if (existingUsernamesToProcess.contains(username)) {
+                logger.infof("Removal record for user %s already exists", username);
+            } else {
+                logger.infof("Creating removal record for user %s", username);
+                UserRemoval removal = new UserRemoval();
+                removal.setUsername(username);
+                em.persist(removal);
+            }
         });
 
-        transaction.commit();
+        em.getTransaction().commit();
     }
 }
