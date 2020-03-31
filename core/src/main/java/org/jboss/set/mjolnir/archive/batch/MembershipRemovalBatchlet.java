@@ -27,8 +27,6 @@ import java.util.stream.Collectors;
 
 /**
  * Batchlet that handles the user removal process.
- *
- * TODO: the batch job is supposed to be started by a scheduler once a day or so.
  */
 @Named
 public class MembershipRemovalBatchlet extends AbstractBatchlet {

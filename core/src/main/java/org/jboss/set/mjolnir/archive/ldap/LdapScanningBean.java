@@ -115,7 +115,7 @@ public class LdapScanningBean {
     /**
      * Collects members of all teams of all registered GitHub organizations.
      */
-    public Set<String> getAllOrganizationsMembers() throws IOException { // TODO
+    Set<String> getAllOrganizationsMembers() throws IOException {
         List<GitHubOrganization> organizations =
                 em.createNamedQuery(GitHubOrganization.FIND_ALL, GitHubOrganization.class).getResultList();
 
