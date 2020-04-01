@@ -49,6 +49,7 @@ create table users (
     note varchar(255),
     admin boolean not null default false,
     whitelisted boolean not null default false,
+    responsible_person varchar(255),
     created timestamp default CURRENT_TIMESTAMP
 );
 
