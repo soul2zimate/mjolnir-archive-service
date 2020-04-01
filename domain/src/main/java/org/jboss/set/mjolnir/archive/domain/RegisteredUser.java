@@ -46,6 +46,9 @@ public class RegisteredUser {
 
     private boolean whitelisted;
 
+    @Column(name = "responsible_person")
+    private String responsiblePerson;
+
     public RegisteredUser() {
     }
 
@@ -91,5 +94,13 @@ public class RegisteredUser {
 
     public void setWhitelisted(boolean whitelisted) {
         this.whitelisted = whitelisted;
+    }
+
+    public String getResponsiblePerson() {
+        return responsiblePerson;
+    }
+
+    public void setResponsiblePerson(String responsiblePerson) {
+        this.responsiblePerson = responsiblePerson;
     }
 }
