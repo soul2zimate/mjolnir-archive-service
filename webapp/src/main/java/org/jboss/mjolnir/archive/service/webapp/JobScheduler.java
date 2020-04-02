@@ -10,12 +10,15 @@ import javax.batch.runtime.BatchRuntime;
 import javax.ejb.Schedule;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Properties;
 
 @Singleton
 @Startup
+@TransactionManagement(TransactionManagementType.BEAN) // do not open managed transaction
 public class JobScheduler {
 
     private final Logger logger = Logger.getLogger(getClass());

@@ -9,6 +9,8 @@ import org.jboss.set.mjolnir.archive.mail.report.WhitelistedUsersWithoutLdapRepo
 
 import javax.ejb.Schedule;
 import javax.ejb.Singleton;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.inject.Inject;
 import javax.mail.MessagingException;
 import javax.naming.NamingException;
@@ -17,6 +19,7 @@ import java.sql.Timestamp;
 import java.util.*;
 
 @Singleton
+@TransactionManagement(TransactionManagementType.BEAN) // do not open managed transaction
 public class ReportScheduler {
 
     private Logger logger = Logger.getLogger(getClass());
