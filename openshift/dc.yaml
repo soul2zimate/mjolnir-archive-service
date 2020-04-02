@@ -1,0 +1,134 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    application: mjolnir-archive-service
+    xpaas: "1.1.0"
+  name: mjolnir-archive-service
+spec:
+  replicas: 2
+  revisionHistoryLimit: 10
+  selector:
+    deploymentConfig: mjolnir-archive-service
+  strategy:
+    activeDeadlineSeconds: 21600
+    recreateParams:
+      timeoutSeconds: 600
+    resources: {}
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        application: mjolnir-archive-service
+        deploymentConfig: mjolnir-archive-service
+      name: mjolnir-archive-service
+    spec:
+      containers:
+      - env:
+        - name: JGROUPS_PING_PROTOCOL
+          value: dns.DNS_PING
+        - name: JGROUPS_CLUSTER_PASSWORD
+          value: Lo0fI8cf
+        - name: OPENSHIFT_DNS_PING_SERVICE_NAME
+          value: mjolnir-archive-service-ping
+        - name: OPENSHIFT_DNS_PING_SERVICE_PORT
+          value: "8888"
+        - name: ENV_FILES
+          value: /etc/eap-environment/*
+        - name: AUTO_DEPLOY_EXPLODED
+          value: "false"
+        - name: DISABLE_EMBEDDED_JMS_BROKER
+          value: "true"
+        - name: LOGGING_SCRIPT_DEBUG
+          value: "false"
+        image: images.paas.redhat.com/thofman/mjolnir-archive-service:latest
+        imagePullPolicy: Always
+        livenessProbe:
+          exec:
+            command:
+            - /bin/bash
+            - -c
+            - /opt/eap/bin/livenessProbe.sh
+          failureThreshold: 3
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        name: mjolnir-archive-service
+        ports:
+        - containerPort: 8778
+          name: jolokia
+          protocol: TCP
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 8443
+          name: https
+          protocol: TCP
+        - containerPort: 8888
+          name: ping
+          protocol: TCP
+        readinessProbe:
+          exec:
+            command:
+            - /bin/bash
+            - -c
+            - /opt/eap/bin/readinessProbe.sh false
+          failureThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources:
+          limits:
+            cpu: "2"
+            memory: 1Gi
+          requests:
+            memory: 500Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/eap-environment
+          name: configuration
+          readOnly: true
+        - mountPath: /etc/eap-secret-volume
+          name: eap-keystore-volume
+          readOnly: true
+        - mountPath: /etc/jgroups-encrypt-secret-volume
+          name: eap-jgroups-keystore-volume
+          readOnly: true
+        - mountPath: /data
+          name: repository-archive
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 75
+      volumes:
+      - name: configuration
+        secret:
+          defaultMode: 420
+          secretName: mjolnir-archive-config
+      - name: eap-keystore-volume
+        secret:
+          defaultMode: 420
+          secretName: mjolnir-archive-secret
+      - name: eap-jgroups-keystore-volume
+        secret:
+          defaultMode: 420
+          secretName: mjolnir-archive-secret
+      - name: repository-archive
+        persistentVolumeClaim:
+          claimName: repository-archive
+  test: false
+  triggers:
+  - imageChangeParams:
+      automatic: true
+      containerNames:
+      - mjolnir-archive-service
+      from:
+        kind: ImageStreamTag
+        name: mjolnir-archive-service:latest
+        namespace: mjolnir--prototype
+    type: ImageChange
+  - type: ConfigChange
