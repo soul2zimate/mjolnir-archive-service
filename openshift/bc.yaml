@@ -1,0 +1,57 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  labels:
+    application: mjolnir-archive-service
+  name: mjolnir-archive-service-build
+spec:
+  output:
+    pushSecret:
+      name: images-paas-pull-secret
+    to:
+      kind: DockerImage
+      # TODO: change this from "thofman" to "mjolnir" organization
+      name: images.paas.redhat.com/thofman/mjolnir-archive-service:latest
+  source:
+    git:
+      ref: master
+      uri: https://github.com/jboss-set/mjolnir-archive-service.git
+    images:
+    - from:
+        kind: ImageStreamTag
+        name: eap-postgresql-driver:latest
+      paths:
+      - destinationDir: ./extensions/extras
+        sourcePath: /extensions/.
+    type: Git
+  strategy:
+    sourceStrategy:
+      env:
+      - name: MAVEN_MIRROR_URL
+      - name: MAVEN_ARGS_APPEND
+      - name: CUSTOM_INSTALL_DIRECTORIES
+        value: extensions/*
+      - name: ARTIFACT_DIR
+        value: webapp/target
+      - name: S2I_SOURCE_DEPLOYMENTS_FILTER
+        value: '*.war'
+      forcePull: true
+      from:
+        kind: ImageStreamTag
+        name: jboss-eap72-openjdk11-openshift-rhel8:latest
+      incremental: true
+    type: Source
+  triggers:
+  - imageChange:
+      from:
+        kind: ImageStreamTag
+        name: eap-postgresql-driver:latest
+        namespace: mjolnir--build
+    type: ImageChange
+  - imageChange:
+      from:
+        kind: ImageStreamTag
+        name: jboss-eap72-openjdk11-openshift-rhel8:latest
+        namespace: mjolnir--build
+    type: ImageChange
+  - type: ConfigChange
