@@ -39,8 +39,14 @@ Import JBoss EAP 7.2 S2I image:
 oc import-image registry.redhat.io/jboss-eap-7/eap72-openjdk11-openshift-rhel8:latest --confirm --scheduled
 ```
 
-Create pull secret for your external repository
-(assumed name is images-paas-pull-secret, you can change it in the bc.yaml file).
+Create pull secret for your external repository and link it with default and builder accounts
+(set the name of the secret in bc.yaml file, under pullSecret / pushSecret keys):
+
+```shell script
+oc create -f <pull_secret_name.yaml>
+oc secrets link default <pull_secret_name> --for=pull
+oc secrets link builder <pull_secret_name>
+```
 
 Create a BuildConfig object:
 
@@ -64,6 +70,15 @@ List of OpenShift YAML files:
 * is.yml
 
 ### Steps to Deploy
+
+Create pull secret for your external repository and link it with default and builder accounts:
+
+```shell script
+oc create -f <pull_secret_name.yaml>
+oc secrets link default <pull_secret_name> --for=pull
+oc secrets link builder <pull_secret_name>
+```
+
 
 Create image stream:
 
