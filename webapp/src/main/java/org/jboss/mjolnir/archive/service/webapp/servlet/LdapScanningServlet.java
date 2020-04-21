@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 @WebServlet("/ldap-scan")
 public class LdapScanningServlet extends HttpServlet {
@@ -22,7 +23,8 @@ public class LdapScanningServlet extends HttpServlet {
         ldapScanningBean.createRemovalsForUsersWithoutLdapAccount();
 
         resp.setContentType("text/plain");
-        ServletOutputStream os = resp.getOutputStream();
-        os.println("OK");
+        try (PrintWriter writer = resp.getWriter()) {
+            writer.println("OK");
+        }
     }
 }
