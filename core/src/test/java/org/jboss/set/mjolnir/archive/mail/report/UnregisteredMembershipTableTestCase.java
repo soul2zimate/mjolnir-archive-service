@@ -96,14 +96,14 @@ public class UnregisteredMembershipTableTestCase {
         String messageBody = unregisteredMembersReportTable.composeTable();
         Document doc = Jsoup.parse(messageBody);
 
-        assertThat(doc.select("tr").size()).isEqualTo(testUserTeams.size() + 2);
-        assertThat(doc.select("th").text()).isEqualTo("Name Team");
+        assertThat(doc.select("tr").size()).isEqualTo(testUserTeams.size());
+        assertThat(doc.select("th").text()).isEqualTo("GH Username Teams");
 
         Elements elements = doc.select("td");
-        assertThat(elements.size()).isEqualTo(testUserTeams.size() + 2);
+        assertThat(elements.size()).isEqualTo(testUserTeams.size());
 
         assertThat(elements.get(0).childNode(0).toString()).isEqualTo(testUser);
-        assertThat(elements.get(2).childNode(0).toString()).isEqualTo(testUserTeams.get(0).getName());
-        assertThat(elements.get(3).childNode(0).toString()).isEqualTo(testUserTeams.get(1).getName());
+        assertThat(elements.get(1).childNode(0).toString()).contains(testUserTeams.get(0).getName());
+        assertThat(elements.get(1).childNode(0).toString()).contains(testUserTeams.get(1).getName());
     }
 }

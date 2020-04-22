@@ -3,7 +3,6 @@ package org.jboss.set.mjolnir.archive.mail.report;
 import j2html.tags.DomContent;
 import org.eclipse.egit.github.core.Team;
 import org.jboss.set.mjolnir.archive.ldap.LdapScanningBean;
-import org.jboss.set.mjolnir.archive.mail.report.ReportTable;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -12,46 +11,49 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static j2html.TagCreator.*;
+import static j2html.TagCreator.div;
+import static j2html.TagCreator.each;
+import static j2html.TagCreator.h2;
+import static j2html.TagCreator.li;
+import static j2html.TagCreator.p;
+import static j2html.TagCreator.table;
+import static j2html.TagCreator.td;
 import static j2html.TagCreator.th;
+import static j2html.TagCreator.tr;
+import static j2html.TagCreator.ul;
 
 public class UnregisteredMembersReportTable implements ReportTable {
 
-    private static final String NAME_LABEL = "Name";
-    private static final String TEAM_LABEL = "Team";
-
-    private static final String TABLE_STYLE = "width:100%;";
-    private static final String CAPTION_STYLE = "padding: 15px; font-size: 160%; text-align: left;";
-    private static final String TD_STYLE = "border: 1px solid black; border-collapse: collapse; padding-left: 15px;";
-    private static final String BORDER_STYLE = "border: 1px solid black; border-collapse: collapse;";
+    private static final String NAME_LABEL = "GH Username";
+    private static final String TEAM_LABEL = "Teams";
 
     @Inject
     private LdapScanningBean ldapScanningBean;
 
     @Override
     public String composeTable() throws IOException {
-        String table = table().withStyle(TABLE_STYLE + TD_STYLE).with(
-                caption("Unregistered users and theirs memberships").withStyle(TABLE_STYLE + CAPTION_STYLE),
-                tr().with(
-                        th(NAME_LABEL),
-                        th(TEAM_LABEL)
-                ),
-                addUnregisteredOrganizationMembersRows(getUnregisteredMembersWithTeams())
-        ).render();
-
-        return table;
+        String html = div().with(
+                h2("Unknown GH Teams Members").withStyle(Styles.H2_STYLE),
+                p("These users are members of GitHub teams, but are not registered in our database.")
+                        .withStyle(Styles.SUB_HEADING_STYLE),
+                table().withStyle(Styles.TABLE_STYLE + Styles.TD_STYLE).with(
+                        tr().with(
+                                th(NAME_LABEL).withStyle(Styles.TH_STYLE),
+                                th(TEAM_LABEL).withStyle(Styles.TH_STYLE)
+                        ),
+                        addUnregisteredOrganizationMembersRows(getUnregisteredMembersWithTeams())
+                ))
+                .render();
+        return html;
     }
 
     private <T> DomContent addUnregisteredOrganizationMembersRows(Map<String, List<Team>> userTeams) {
         return each(userTeams, userTeam -> tr(
-                td(userTeam.getKey()).withStyle(TD_STYLE),
+                td(userTeam.getKey()).withStyle(Styles.TD_STYLE),
                 td(
-                        table().withStyle(TABLE_STYLE + BORDER_STYLE).with(
-                                each(userTeam.getValue(), team -> tr(
-                                        td(team.getName()).withStyle(TD_STYLE)
-                                ))
-                        )
-                ).withStyle(BORDER_STYLE)
+                        ul().withStyle(Styles.UL_STYLE)
+                                .with(each(userTeam.getValue(), team -> li(team.getName())))
+                ).withStyle(Styles.BORDER_STYLE)
         ));
     }
 
@@ -60,7 +62,7 @@ public class UnregisteredMembersReportTable implements ReportTable {
         Map<String, List<Team>> userTeams = new HashMap<>();
         for (String member : unregisteredOrganizationMembers) {
             userTeams.put(member, ldapScanningBean.getAllUsersTeams(member));
-        };
+        }
 
         return userTeams;
     }

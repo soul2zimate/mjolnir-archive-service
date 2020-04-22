@@ -13,29 +13,26 @@ public class WhitelistedUsersWithoutLdapReportTable implements ReportTable {
 
     private static final String NAME_LABEL = "Name";
 
-    private static final String TABLE_STYLE = "width:100%;";
-    private static final String CAPTION_STYLE = "padding: 15px; font-size: 160%; text-align: left;";
-    private static final String TD_STYLE = "border: 1px solid black; border-collapse: collapse; padding-left: 15px;";
-
     @Inject
     private LdapScanningBean ldapScanningBean;
 
     @Override
     public String composeTable() throws NamingException {
-        String table = table().withStyle(TABLE_STYLE + TD_STYLE).with(
-                caption("Whitelisted users without LDAP account").withStyle(TABLE_STYLE + CAPTION_STYLE),
-                tr().with(
-                        th(NAME_LABEL)
-                ),
-                addWhitelistedUserWithoutLdapRows(getWhitelistedUsersWithoutLdapReportTable())
-        ).render();
-
-        return table;
+        String html = div().with(
+                h2("Whitelisted Users without an LDAP Account").withStyle(Styles.H2_STYLE),
+                table().withStyle(Styles.TABLE_STYLE + Styles.TD_STYLE).with(
+                        tr().with(
+                                th(NAME_LABEL).withStyle(Styles.TH_STYLE)
+                        ),
+                        addWhitelistedUserWithoutLdapRows(getWhitelistedUsersWithoutLdapReportTable())
+                ))
+                .render();
+        return html;
     }
 
     private <T> DomContent addWhitelistedUserWithoutLdapRows(Set<String> whitelistedUsersWithoutLdapAccount) {
         return each(whitelistedUsersWithoutLdapAccount, user -> tr(
-                td(user).withStyle(TD_STYLE)
+                td(user).withStyle(Styles.TD_STYLE)
         ));
     }
 

@@ -69,7 +69,7 @@ public class RemovalsReportTableTestCase {
         Document doc = Jsoup.parse(messageBody);
 
         assertThat(doc.select("tr").size()).isEqualTo(lastFinishedRemovals.size() + 1);
-        assertThat(doc.select("th").text()).isEqualTo("Name Created Started Status");
+        assertThat(doc.select("th").text()).isEqualTo("Username Created Started Status");
 
         Elements elements = doc.select("td");
         assertThat(elements.size()).isEqualTo(lastFinishedRemovals.size() * 4);
