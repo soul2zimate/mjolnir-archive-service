@@ -3,6 +3,7 @@ package org.jboss.set.mjolnir.archive.ldap;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.apache.deltaspike.core.util.ArraysUtils;
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
+import org.assertj.core.groups.Tuple;
 import org.eclipse.egit.github.core.Team;
 import org.jboss.set.mjolnir.archive.domain.RegisteredUser;
 import org.jboss.set.mjolnir.archive.domain.UserRemoval;
@@ -167,6 +168,21 @@ public class LdapScanningBeanTestCase {
     }
 
     @Test
+    public void testWhitelistedUsersWithLdapAccount() throws NamingException {
+        createRegisteredUser("bobNonExisting", "bob", true);
+        createRegisteredUser("jimExisting", "jim", "responsible guy", true);
+        createRegisteredUser(null, "ben", true);
+        createRegisteredUser(null, "joe", false);
+
+        Set<RegisteredUser> members = ldapScanningBean.getWhitelistedUsersWithLdapAccount();
+        assertThat(members)
+                .extracting("githubName", "responsiblePerson")
+                .containsOnly(
+                        Tuple.tuple("jim", "responsible guy")
+                );
+    }
+
+    @Test
     public void testAllUsersTeams() throws IOException {
         List<Team> teams = ldapScanningBean.getAllUsersTeams("bob");
         assertThat(teams)
@@ -207,9 +223,14 @@ public class LdapScanningBeanTestCase {
     }
 
     private void createRegisteredUser(String username, String githubName, boolean whitelisted) {
+        createRegisteredUser(username, githubName, null, whitelisted);
+    }
+
+    private void createRegisteredUser(String username, String githubName, String responsiblePerson, boolean whitelisted) {
         RegisteredUser registeredUser = new RegisteredUser();
         registeredUser.setGithubName(githubName);
         registeredUser.setKerberosName(username);
+        registeredUser.setResponsiblePerson(responsiblePerson);
         registeredUser.setWhitelisted(whitelisted);
 
         em.getTransaction().begin();

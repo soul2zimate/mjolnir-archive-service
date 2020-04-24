@@ -24,7 +24,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 @RunWith(CdiTestRunner.class)
-public class WhitelistedUsersWithoutLdapReportTableTestCase {
+public class WhitelistedUsersWithLdapReportTableTestCase {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(8089);
@@ -36,7 +36,7 @@ public class WhitelistedUsersWithoutLdapReportTableTestCase {
     private LdapScanningBean ldapScanningBean;
 
     @Inject
-    private WhitelistedUsersWithoutLdapReportTable whitelistedUsersWithoutLdapReportTable;
+    private WhitelistedUsersWithLdapReportTable whitelistedUsersWithLdapReportTable;
 
     @Before
     public void setup() {
@@ -51,6 +51,7 @@ public class WhitelistedUsersWithoutLdapReportTableTestCase {
         registeredUser = new RegisteredUser();
         registeredUser.setGithubName("jim");
         registeredUser.setKerberosName("jimExisting");
+        registeredUser.setResponsiblePerson("Responsible guy");
         registeredUser.setWhitelisted(true);
         em.persist(registeredUser);
 
@@ -77,25 +78,26 @@ public class WhitelistedUsersWithoutLdapReportTableTestCase {
         ldapDiscoveryBeanField.setAccessible(true);
         ldapDiscoveryBeanField.set(ldapScanningBean, ldapDiscoveryBean);
 
-        Field ldapScanningBeanField = WhitelistedUsersWithoutLdapReportTable.class.getDeclaredField("ldapScanningBean");
+        Field ldapScanningBeanField = WhitelistedUsersWithLdapReportTable.class.getDeclaredField("ldapScanningBean");
         ldapScanningBeanField.setAccessible(true);
-        ldapScanningBeanField.set(whitelistedUsersWithoutLdapReportTable, ldapScanningBean);
+        ldapScanningBeanField.set(whitelistedUsersWithLdapReportTable, ldapScanningBean);
 
-        Set<String> users = ldapScanningBean.getWhitelistedUsersWithoutLdapAccount();
+        Set<RegisteredUser> users = ldapScanningBean.getWhitelistedUsersWithLdapAccount();
 
-        String messageBody = whitelistedUsersWithoutLdapReportTable.composeTable();
+        String messageBody = whitelistedUsersWithLdapReportTable.composeTable();
         Document doc = Jsoup.parse(messageBody);
 
         assertThat(doc.select("tr").size()).isEqualTo(users.size() + 1);
-        assertThat(doc.select("th").text()).isEqualTo("Name");
+        assertThat(doc.select("th").text()).isEqualTo("Name Responsible person");
 
         Elements elements = doc.select("td");
-        assertThat(elements.size()).isEqualTo(users.size());
+        assertThat(elements.size()).isEqualTo(users.size() * 2);
 
         int i = 0;
-        for (String user : users) {
-            assertThat(user).isEqualTo(elements.get(i).childNode(0).toString());
-            i++;
+        for (RegisteredUser user : users) {
+            assertThat(user.getGithubName()).isEqualTo(elements.get(i).childNode(0).toString());
+            assertThat(user.getResponsiblePerson()).isEqualTo(elements.get(i + 1).childNode(0).toString());
+            i += 2;
         }
     }
 }
