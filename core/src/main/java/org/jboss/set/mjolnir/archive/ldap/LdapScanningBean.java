@@ -101,15 +101,27 @@ public class LdapScanningBean {
     }
 
     public Set<String> getWhitelistedUsersWithoutLdapAccount() throws NamingException {
-        List<RegisteredUser> whitelistedUsers = em.createNamedQuery(RegisteredUser.FIND_WHITELISTED, RegisteredUser.class).getResultList();
-
         Set<String> whitelistedUsersWithoutLdapAccount = new HashSet<>();
-        for (RegisteredUser whitelistedUser : whitelistedUsers) {
+        for (RegisteredUser whitelistedUser : getWhitelistedUsers()) {
             if (StringUtils.isBlank(whitelistedUser.getKerberosName()) || !ldapDiscoveryBean.checkUserExists(whitelistedUser.getKerberosName()))
                 whitelistedUsersWithoutLdapAccount.add(whitelistedUser.getGithubName());
         }
 
         return whitelistedUsersWithoutLdapAccount;
+    }
+
+    public Set<RegisteredUser> getWhitelistedUsersWithLdapAccount() throws NamingException {
+        Set<RegisteredUser> whitelistedUsersWithLdapAccount = new HashSet<>();
+        for (RegisteredUser whitelistedUser : getWhitelistedUsers()) {
+            if (!StringUtils.isBlank(whitelistedUser.getKerberosName()) && ldapDiscoveryBean.checkUserExists(whitelistedUser.getKerberosName()))
+                whitelistedUsersWithLdapAccount.add(whitelistedUser);
+        }
+
+        return whitelistedUsersWithLdapAccount;
+    }
+
+    public List<RegisteredUser> getWhitelistedUsers() {
+        return em.createNamedQuery(RegisteredUser.FIND_WHITELISTED, RegisteredUser.class).getResultList();
     }
 
     /**
