@@ -14,10 +14,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
-import javax.naming.NamingException;
+
 import javax.persistence.EntityManager;
-import java.io.IOException;
-import java.net.URISyntaxException;
+
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.List;
