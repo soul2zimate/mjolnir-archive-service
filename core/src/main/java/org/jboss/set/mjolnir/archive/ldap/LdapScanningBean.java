@@ -100,11 +100,11 @@ public class LdapScanningBean {
         createUserRemovals(usersWithoutLdapAccount);
     }
 
-    public Set<String> getWhitelistedUsersWithoutLdapAccount() throws NamingException {
-        Set<String> whitelistedUsersWithoutLdapAccount = new HashSet<>();
+    public Set<RegisteredUser> getWhitelistedUsersWithoutLdapAccount() throws NamingException {
+        Set<RegisteredUser> whitelistedUsersWithoutLdapAccount = new HashSet<>();
         for (RegisteredUser whitelistedUser : getWhitelistedUsers()) {
             if (StringUtils.isBlank(whitelistedUser.getKerberosName()) || !ldapDiscoveryBean.checkUserExists(whitelistedUser.getKerberosName()))
-                whitelistedUsersWithoutLdapAccount.add(whitelistedUser.getGithubName());
+                whitelistedUsersWithoutLdapAccount.add(whitelistedUser);
         }
 
         return whitelistedUsersWithoutLdapAccount;
