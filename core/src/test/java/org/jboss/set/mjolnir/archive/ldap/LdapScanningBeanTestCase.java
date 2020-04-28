@@ -163,8 +163,10 @@ public class LdapScanningBeanTestCase {
         createRegisteredUser(null, "ben", true);
         createRegisteredUser(null, "joe", false);
 
-        Set<String> members = ldapScanningBean.getWhitelistedUsersWithoutLdapAccount();
-        assertThat(members).containsOnly("bob", "ben");
+        Set<RegisteredUser> members = ldapScanningBean.getWhitelistedUsersWithoutLdapAccount();
+        assertThat(members)
+                .extracting("githubName")
+                .containsOnly("ben", "bob");
     }
 
     @Test

@@ -78,7 +78,7 @@ public class WhitelistedUsersWithLdapReportTableTestCase {
         ldapDiscoveryBeanField.setAccessible(true);
         ldapDiscoveryBeanField.set(ldapScanningBean, ldapDiscoveryBean);
 
-        Field ldapScanningBeanField = WhitelistedUsersWithLdapReportTable.class.getDeclaredField("ldapScanningBean");
+        Field ldapScanningBeanField = WhitelistedUserReportTable.class.getDeclaredField("ldapScanningBean");
         ldapScanningBeanField.setAccessible(true);
         ldapScanningBeanField.set(whitelistedUsersWithLdapReportTable, ldapScanningBean);
 

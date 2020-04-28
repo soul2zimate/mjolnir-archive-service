@@ -17,6 +17,7 @@ import javax.mail.MessagingException;
 import javax.naming.NamingException;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Singleton
@@ -52,7 +53,9 @@ public class ReportScheduler {
     public void sendMail() throws IOException, NamingException {
         String fromAddress = configuration.getReportingEmail();
         String toAddress = configuration.getReportingEmail();
-        String subject = SUBJECT + new Timestamp(System.currentTimeMillis());
+
+        SimpleDateFormat noMillisFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        String subject = SUBJECT + noMillisFormat.format(new Timestamp(System.currentTimeMillis()));
 
         List<ReportTable> reportTables = new ArrayList<>();
         reportTables.add(removalsReportTable);

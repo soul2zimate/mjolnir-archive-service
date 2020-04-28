@@ -14,11 +14,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
-import javax.naming.NamingException;
 import javax.persistence.EntityManager;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
@@ -63,6 +61,8 @@ public class RemovalsReportTableTestCase {
 
     @Test
     public void testComposeTableBody() {
+        SimpleDateFormat noMillisFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+
         List<UserRemoval> lastFinishedRemovals = removalsReportBean.getLastFinishedRemovals();
 
         String messageBody = removalsReportTable.composeTable();
@@ -76,8 +76,8 @@ public class RemovalsReportTableTestCase {
 
         for (int i = 0; i < lastFinishedRemovals.size(); i++) {
             assertThat(elements.get((i * 4)).childNode(0).toString()).isEqualTo(lastFinishedRemovals.get(i).getUsername());
-            assertThat(elements.get((i * 4) + 1).childNode(0).toString()).isEqualTo(lastFinishedRemovals.get(i).getCreated().toString());
-            assertThat(elements.get((i * 4) + 2).childNode(0).toString()).isEqualTo(lastFinishedRemovals.get(i).getStarted().toString());
+            assertThat(elements.get((i * 4) + 1).childNode(0).toString()).isEqualTo(noMillisFormat.format(lastFinishedRemovals.get(i).getCreated()));
+            assertThat(elements.get((i * 4) + 2).childNode(0).toString()).isEqualTo(noMillisFormat.format(lastFinishedRemovals.get(i).getStarted()));
             assertThat(elements.get((i * 4) + 3).childNode(0).toString()).isEqualTo(lastFinishedRemovals.get(i).getStatus().toString());
         }
     }
