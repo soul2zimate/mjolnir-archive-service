@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * Lists log of batch jobs and their states.
+ * Prints log of executed batch jobs and their states.
  */
 @WebServlet("/list-batches")
 public class ListBatchesServlet extends HttpServlet {

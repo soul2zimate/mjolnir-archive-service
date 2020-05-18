@@ -20,6 +20,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+/**
+ * Sends a testing email to address defined in configuration.
+ */
 @WebServlet("/generate-test-email")
 public class GenerateTestEmailServlet extends HttpServlet {
 

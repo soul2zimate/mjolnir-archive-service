@@ -12,6 +12,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+/**
+ * Generates an email report containing a listing of performed user removals and information about unknown GH members.
+ */
 @WebServlet("/generate-email-report")
 public class GenerateEmailReportServlet extends HttpServlet {
 

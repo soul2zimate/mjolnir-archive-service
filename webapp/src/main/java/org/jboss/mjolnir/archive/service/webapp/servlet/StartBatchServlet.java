@@ -16,11 +16,9 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * Triggers new batch job execution (executions are normally triggered by a scheduler).
- *
- * TODO: This should either be disabled, or must require an authorized user.
+ * Triggers a batch job that archives repositories of offboarder users and removes their GH team memberships.
  */
-@WebServlet("/start-batch")
+@WebServlet("/archive-users")
 public class StartBatchServlet extends HttpServlet {
 
     private Logger logger = Logger.getLogger(getClass());
