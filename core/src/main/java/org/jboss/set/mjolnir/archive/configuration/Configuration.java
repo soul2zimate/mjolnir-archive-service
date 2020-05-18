@@ -86,20 +86,24 @@ public class Configuration {
             return this;
         }
 
-        public void setReportingEmail(String reportingEmail) {
+        public ConfigurationBuilder setReportingEmail(String reportingEmail) {
             this.configuration.reportingEmail = reportingEmail;
+            return this;
         }
 
-        public void setUnsubscribeUsers(boolean unsubscribeUsers) {
+        public ConfigurationBuilder setUnsubscribeUsers(boolean unsubscribeUsers) {
             this.configuration.unsubscribeUsers = unsubscribeUsers;
+            return this;
         }
 
-        public void setLdapUrl(String url) {
+        public ConfigurationBuilder setLdapUrl(String url) {
             this.configuration.ldapUrl = url;
+            return this;
         }
 
-        public void setLdapSearchContext(String context) {
+        public ConfigurationBuilder setLdapSearchContext(String context) {
             this.configuration.ldapSearchContext = context;
+            return this;
         }
 
         public Configuration build() {
