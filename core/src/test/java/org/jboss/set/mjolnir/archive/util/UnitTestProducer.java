@@ -75,7 +75,7 @@ public class UnitTestProducer {
 
     @Produces
     @Singleton
-    public LdapDiscoveryBean createLdapDiscoveryBean() {
+    public LdapDiscoveryBean createLdapDiscoveryBeanMock() {
         return Mockito.mock(LdapDiscoveryBean.class);
     }
 

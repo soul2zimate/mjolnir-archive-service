@@ -12,6 +12,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+/**
+ * Retrieves all GH team members and creates removal records for members without active LDAP account.
+ */
 @WebServlet("/ldap-scan")
 public class LdapScanningServlet extends HttpServlet {
 

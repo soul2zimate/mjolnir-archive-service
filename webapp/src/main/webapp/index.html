@@ -1,1 +1,21 @@
-<h1>Hello</h1>
+<html>
+<body>
+
+<h1>Mjolnir Archive Service</h1>
+<p>Application is successfully deployed.</p>
+
+<h2>Control Endpoints</h2>
+
+<dl>
+    <dt>/archive-users</dt>
+    <dd>Triggers the archiving job - archives repositories and removes memberships of previously discovered offboarded users.</dd>
+    <dt>/ldap-scan</dt>
+    <dd>Discover offboarded users by comparing user database with company LDAP.</dd>
+    <dt>/generate-email-report</dt>
+    <dd>Generates report that lists performed removals, discovered unknown users, etc.</dd>
+    <dt>/generate-test-email</dt>
+    <dd>Generates empty test email.</dd>
+</dl>
+
+</body>
+</html>
