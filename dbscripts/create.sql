@@ -30,6 +30,7 @@ create table github_orgs (
     id bigint default nextval('sq_github_orgs') primary key,
     name varchar(255) unique
 );
+
 create sequence sq_github_teams;
 
 create table github_teams (
