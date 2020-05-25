@@ -10,6 +10,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+/**
+ * Defines basic operations for fetching remote repositories.
+ */
 public class GitArchiveRepository {
 
     private Git git;

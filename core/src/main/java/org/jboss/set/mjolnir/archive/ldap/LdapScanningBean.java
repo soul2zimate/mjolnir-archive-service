@@ -172,16 +172,13 @@ public class LdapScanningBean {
     }
 
     private static boolean containsRegisteredUser(String member, List<RegisteredUser> registeredUsers) {
-        boolean isMember = false;
-
         for (RegisteredUser registeredUser : registeredUsers) {
-            isMember = member.equals(registeredUser.getGithubName());
-
-            if (isMember)
-                break;
+            if (registeredUser.getGithubName() != null
+                    && member.toLowerCase().equals(registeredUser.getGithubName().toLowerCase())) {
+                return true;
+            }
         }
-
-        return isMember;
+        return false;
     }
 
     /**

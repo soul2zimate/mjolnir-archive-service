@@ -17,7 +17,7 @@ import javax.persistence.Table;
         @NamedQuery(name = RegisteredUser.FIND_ALL, query = "SELECT u FROM RegisteredUser u"),
         @NamedQuery(name = RegisteredUser.FIND_WHITELISTED, query = "SELECT u FROM RegisteredUser u WHERE u.whitelisted IS TRUE"),
         @NamedQuery(name = RegisteredUser.FIND_BY_KRB_NAME, query = "SELECT u FROM RegisteredUser u WHERE u.kerberosName = :krbName"),
-        @NamedQuery(name = RegisteredUser.FIND_BY_GITHUB_NAME, query = "SELECT u FROM RegisteredUser u WHERE u.githubName = :githubName")
+        @NamedQuery(name = RegisteredUser.FIND_BY_GITHUB_NAME, query = "SELECT u FROM RegisteredUser u WHERE LOWER(u.githubName) = LOWER(:githubName)")
 })
 @Entity
 @Table(name = "users")
@@ -28,6 +28,7 @@ public class RegisteredUser {
     public static final String FIND_BY_KRB_NAME = "RegisteredUser.findByKrbName";
     public static final String FIND_BY_GITHUB_NAME = "RegisteredUser.findByGitHubName";
 
+    @SuppressWarnings("unused")
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sq_users")
     @SequenceGenerator(name = "sq_users", sequenceName = "sq_users", allocationSize = 1)
