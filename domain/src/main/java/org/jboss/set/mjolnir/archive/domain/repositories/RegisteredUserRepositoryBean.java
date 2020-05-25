@@ -26,7 +26,7 @@ public class RegisteredUserRepositoryBean {
 
     public Optional<RegisteredUser> findByGitHubUsername(String username) {
         TypedQuery<RegisteredUser> query = em.createNamedQuery(RegisteredUser.FIND_BY_GITHUB_NAME, RegisteredUser.class);
-        query.setParameter("githubName", username);
+        query.setParameter("githubName", username.toLowerCase());
         return findSingleResult(query);
     }
 }

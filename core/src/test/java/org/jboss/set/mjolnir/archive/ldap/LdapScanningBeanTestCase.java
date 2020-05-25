@@ -157,6 +157,14 @@ public class LdapScanningBeanTestCase {
     }
 
     @Test
+    public void testUnregisteredOrganizationMembersCaseInsensitive() throws IOException {
+        createRegisteredUser(null, "Bob", false);
+
+        Set<String> members = ldapScanningBean.getUnregisteredOrganizationMembers();
+        assertThat(members).containsOnly("ben");
+    }
+
+    @Test
     public void testWhitelistedUsersWithoutLdapAccount() throws NamingException {
         createRegisteredUser("bobNonExisting", "bob", true);
         createRegisteredUser("jimExisting", "jim", true);
@@ -167,6 +175,18 @@ public class LdapScanningBeanTestCase {
         assertThat(members)
                 .extracting("githubName")
                 .containsOnly("ben", "bob");
+    }
+
+    @Test
+    public void testWhitelistedUsersWithoutLdapAccountCaseInsensitive() throws NamingException {
+        createRegisteredUser("bobNonExisting", "BOB", true);
+        createRegisteredUser("jimExisting", "JIM", true);
+        createRegisteredUser(null, "BEN", true);
+
+        Set<RegisteredUser> members = ldapScanningBean.getWhitelistedUsersWithoutLdapAccount();
+        assertThat(members)
+                .extracting("githubName")
+                .containsOnly("BEN", "BOB");
     }
 
     @Test
@@ -185,6 +205,21 @@ public class LdapScanningBeanTestCase {
     }
 
     @Test
+    public void testWhitelistedUsersWithLdapAccountCaseInsensitive() throws NamingException {
+        createRegisteredUser("bobNonExisting", "BOB", true);
+        createRegisteredUser("jimExisting", "JIM", "responsible guy", true);
+        createRegisteredUser(null, "BEN", true);
+        createRegisteredUser(null, "JOE", false);
+
+        Set<RegisteredUser> members = ldapScanningBean.getWhitelistedUsersWithLdapAccount();
+        assertThat(members)
+                .extracting("githubName", "responsiblePerson")
+                .containsOnly(
+                        Tuple.tuple("JIM", "responsible guy")
+                );
+    }
+
+    @Test
     public void testAllUsersTeams() throws IOException {
         List<Team> teams = ldapScanningBean.getAllUsersTeams("bob");
         assertThat(teams)
@@ -196,6 +231,20 @@ public class LdapScanningBeanTestCase {
     public void testCreateRemovalsForUsersWithoutLdapAccount() {
         createRegisteredUser("bob", "bob", false);
         createRegisteredUser("ben", "ben", false);
+
+        ldapScanningBean.createRemovalsForUsersWithoutLdapAccount();
+
+        TypedQuery<UserRemoval> query = em.createNamedQuery(UserRemoval.FIND_REMOVALS_TO_PROCESS, UserRemoval.class);
+        List<UserRemoval> removals = query.getResultList();
+        assertThat(removals)
+                .extracting("username")
+                .containsOnly("ben", "bob");
+    }
+
+    @Test
+    public void testCreateRemovalsForUsersWithoutLdapAccountCaseInsensitive() {
+        createRegisteredUser("bob", "BOB", false);
+        createRegisteredUser("ben", "BEN", false);
 
         ldapScanningBean.createRemovalsForUsersWithoutLdapAccount();
 

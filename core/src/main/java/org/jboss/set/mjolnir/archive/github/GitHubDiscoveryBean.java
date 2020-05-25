@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  */
 public class GitHubDiscoveryBean {
 
-    private RepositoryService repositoryService;
+    final private RepositoryService repositoryService;
 
     @Inject
     public GitHubDiscoveryBean(GitHubClient client) {
@@ -41,7 +41,7 @@ public class GitHubDiscoveryBean {
         for (Repository sourceRepository : privateRepositories) {
             List<Repository> forks = repositoryService.getForks(sourceRepository);
             forks.stream()
-                    .filter(fork -> githubUser.equals(fork.getOwner().getLogin()))
+                    .filter(fork -> githubUser.toLowerCase().equals(fork.getOwner().getLogin().toLowerCase()))
                     .peek(repository -> repository.setSource(sourceRepository)) // set organization's repository as the source repository
                     .forEach(userRepositories::add);
         }
