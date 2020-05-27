@@ -9,7 +9,6 @@ import javax.naming.NamingException;
 import java.util.Set;
 
 import static j2html.TagCreator.*;
-import static j2html.TagCreator.td;
 
 public abstract class WhitelistedUserReportTable implements ReportTable {
     private static final String NAME_LABEL = "Name";

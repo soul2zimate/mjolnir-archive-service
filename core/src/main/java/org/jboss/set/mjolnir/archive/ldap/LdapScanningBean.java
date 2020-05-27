@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
@@ -101,7 +103,7 @@ public class LdapScanningBean {
     }
 
     public Set<RegisteredUser> getWhitelistedUsersWithoutLdapAccount() throws NamingException {
-        Set<RegisteredUser> whitelistedUsersWithoutLdapAccount = new HashSet<>();
+        SortedSet<RegisteredUser> whitelistedUsersWithoutLdapAccount = new TreeSet<>((user1, user2) -> user1.getGithubName().compareToIgnoreCase(user2.getGithubName()));
         for (RegisteredUser whitelistedUser : getWhitelistedUsers()) {
             if (StringUtils.isBlank(whitelistedUser.getKerberosName()) || !ldapDiscoveryBean.checkUserExists(whitelistedUser.getKerberosName()))
                 whitelistedUsersWithoutLdapAccount.add(whitelistedUser);
@@ -111,7 +113,7 @@ public class LdapScanningBean {
     }
 
     public Set<RegisteredUser> getWhitelistedUsersWithLdapAccount() throws NamingException {
-        Set<RegisteredUser> whitelistedUsersWithLdapAccount = new HashSet<>();
+        SortedSet<RegisteredUser> whitelistedUsersWithLdapAccount = new TreeSet<>((user1, user2) -> user1.getGithubName().compareToIgnoreCase(user2.getGithubName()));
         for (RegisteredUser whitelistedUser : getWhitelistedUsers()) {
             if (!StringUtils.isBlank(whitelistedUser.getKerberosName()) && ldapDiscoveryBean.checkUserExists(whitelistedUser.getKerberosName()))
                 whitelistedUsersWithLdapAccount.add(whitelistedUser);
