@@ -17,6 +17,8 @@ import javax.inject.Inject;
 import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,6 +58,20 @@ public class WhitelistedUsersWithLdapReportTableTestCase {
         em.persist(registeredUser);
 
         registeredUser = new RegisteredUser();
+        registeredUser.setGithubName("carl");
+        registeredUser.setKerberosName("carlExisting");
+        registeredUser.setResponsiblePerson("Responsible guy");
+        registeredUser.setWhitelisted(true);
+        em.persist(registeredUser);
+
+        registeredUser = new RegisteredUser();
+        registeredUser.setGithubName("sam");
+        registeredUser.setKerberosName("samExisting");
+        registeredUser.setResponsiblePerson("Responsible guy");
+        registeredUser.setWhitelisted(true);
+        em.persist(registeredUser);
+
+        registeredUser = new RegisteredUser();
         registeredUser.setGithubName("bruno");
         registeredUser.setWhitelisted(true);
         em.persist(registeredUser);
@@ -73,6 +89,8 @@ public class WhitelistedUsersWithLdapReportTableTestCase {
         LdapDiscoveryBean ldapDiscoveryBean = mock(LdapDiscoveryBean.class);
         doReturn(false).when(ldapDiscoveryBean).checkUserExists("bobNonExisting");
         doReturn(true).when(ldapDiscoveryBean).checkUserExists("jimExisting");
+        doReturn(true).when(ldapDiscoveryBean).checkUserExists("carlExisting");
+        doReturn(true).when(ldapDiscoveryBean).checkUserExists("samExisting");
 
         Field ldapDiscoveryBeanField = LdapScanningBean.class.getDeclaredField("ldapDiscoveryBean");
         ldapDiscoveryBeanField.setAccessible(true);
@@ -83,6 +101,8 @@ public class WhitelistedUsersWithLdapReportTableTestCase {
         ldapScanningBeanField.set(whitelistedUsersWithLdapReportTable, ldapScanningBean);
 
         Set<RegisteredUser> users = ldapScanningBean.getWhitelistedUsersWithLdapAccount();
+        List<RegisteredUser> usersList = new ArrayList<>(users);
+        usersList.sort((user1, user2) -> user1.getGithubName().compareToIgnoreCase(user2.getGithubName()));
 
         String messageBody = whitelistedUsersWithLdapReportTable.composeTable();
         Document doc = Jsoup.parse(messageBody);
@@ -94,7 +114,7 @@ public class WhitelistedUsersWithLdapReportTableTestCase {
         assertThat(elements.size()).isEqualTo(users.size() * 2);
 
         int i = 0;
-        for (RegisteredUser user : users) {
+        for (RegisteredUser user : usersList) {
             assertThat(user.getGithubName()).isEqualTo(elements.get(i).childNode(0).toString());
             assertThat(user.getResponsiblePerson()).isEqualTo(elements.get(i + 1).childNode(0).toString());
             i += 2;

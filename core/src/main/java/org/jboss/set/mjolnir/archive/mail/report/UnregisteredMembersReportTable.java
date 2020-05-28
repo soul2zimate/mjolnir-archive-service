@@ -6,10 +6,11 @@ import org.jboss.set.mjolnir.archive.ldap.LdapScanningBean;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.each;
@@ -59,7 +60,7 @@ public class UnregisteredMembersReportTable implements ReportTable {
 
     private Map<String, List<Team>> getUnregisteredMembersWithTeams() throws IOException {
         Set<String> unregisteredOrganizationMembers = ldapScanningBean.getUnregisteredOrganizationMembers();
-        Map<String, List<Team>> userTeams = new HashMap<>();
+        SortedMap<String, List<Team>> userTeams = new TreeMap<>();
         for (String member : unregisteredOrganizationMembers) {
             userTeams.put(member, ldapScanningBean.getAllUsersTeams(member));
         }
