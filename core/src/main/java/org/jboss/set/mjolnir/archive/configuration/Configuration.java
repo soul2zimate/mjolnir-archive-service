@@ -15,6 +15,7 @@ public class Configuration {
     private String ldapUrl;
     private String ldapSearchContext;
     private boolean unsubscribeUsers = false;
+    private boolean removeUsersWithoutLdapAccount = false;
 
     public Configuration() {
     }
@@ -65,6 +66,10 @@ public class Configuration {
         return unsubscribeUsers;
     }
 
+    public boolean isRemoveUsersWithoutLdapAccount() {
+        return removeUsersWithoutLdapAccount;
+    }
+
     public static class ConfigurationBuilder {
 
         private Configuration configuration = new Configuration();
@@ -93,6 +98,11 @@ public class Configuration {
 
         public ConfigurationBuilder setUnsubscribeUsers(boolean unsubscribeUsers) {
             this.configuration.unsubscribeUsers = unsubscribeUsers;
+            return this;
+        }
+
+        public ConfigurationBuilder setRemoveUsersWithoutLdapAccount(boolean removeUsersWithoutLdapAccount) {
+            this.configuration.removeUsersWithoutLdapAccount = removeUsersWithoutLdapAccount;
             return this;
         }
 
