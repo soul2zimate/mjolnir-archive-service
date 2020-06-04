@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: BuildConfig
 metadata:
-  name: eap-postgresql-driver-build
+  name: eap-postgresql-driver-alpine-build
 spec:
   source:
     git:
-        uri: 'https://github.com/jboss-set/mjolnir-archive-service.git'
+        uri: 'https://github.com/TomasHofman/mjolnir-archive-service.git'
         ref: postgresql-driver
     type: Git
     contextDir: openshift/eap-postgresql-driver/
@@ -13,12 +13,13 @@ spec:
     type: Docker
     dockerStrategy:
       imageOptimizationPolicy: SkipLayers
+      dockerfilePath: Dockerfile.alpine
   output:
     pushSecret:
       name: images-paas-push-config
     to:
       kind: DockerImage
-      name: images.paas.redhat.com/mjolnir/eap-postgresql-driver:fedora
+      name: images.paas.redhat.com/mjolnir/eap-postgresql-driver:latest
   resources:
     limits:
       cpu: '2'
