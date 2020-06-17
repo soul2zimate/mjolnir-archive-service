@@ -1,0 +1,15 @@
+FROM alpine:latest
+
+USER root
+
+# install postgresql jdbc driver
+RUN apk add --no-cache java-postgresql-jdbc
+
+# Copy add-on details
+COPY install.sh \
+     drivers.env \
+     /extensions/
+COPY modules /extensions/modules/
+RUN ln /usr/share/java/postgresql-jdbc-*.jar /extensions/modules/system/layers/openshift/org/postgresql/main/postgresql-jdbc.jar
+
+LABEL name="PostgreSQL JDBC Driver Extension for JBoss EAP 7"
