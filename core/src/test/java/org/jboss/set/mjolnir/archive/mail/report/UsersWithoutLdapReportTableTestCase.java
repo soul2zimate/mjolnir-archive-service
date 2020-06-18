@@ -22,7 +22,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -100,7 +99,7 @@ public class UsersWithoutLdapReportTableTestCase {
 
     @Test
     public void testComposeTableBody() throws IOException, NamingException {
-        Set<String> users = ldapScanningBean.getUsersWithoutLdapAccount();
+        List<String> users = ldapScanningBean.getUsersWithoutLdapAccount();
         List<String> usersList = new ArrayList<>(users);
         usersList.sort(String::compareToIgnoreCase);
 

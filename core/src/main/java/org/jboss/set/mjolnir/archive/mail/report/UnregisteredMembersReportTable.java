@@ -60,7 +60,7 @@ public class UnregisteredMembersReportTable implements ReportTable {
 
     private Map<String, List<Team>> getUnregisteredMembersWithTeams() throws IOException {
         Set<String> unregisteredOrganizationMembers = ldapScanningBean.getUnregisteredOrganizationMembers();
-        SortedMap<String, List<Team>> userTeams = new TreeMap<>((firstUser, secondUser) -> firstUser.compareToIgnoreCase(secondUser));
+        SortedMap<String, List<Team>> userTeams = new TreeMap<>(String::compareToIgnoreCase);
         for (String member : unregisteredOrganizationMembers) {
             userTeams.put(member, ldapScanningBean.getAllUsersTeams(member));
         }

@@ -165,57 +165,32 @@ public class LdapScanningBeanTestCase {
     }
 
     @Test
-    public void testWhitelistedUsersWithoutLdapAccount() throws NamingException {
+    public void testWhitelistedUsers() throws NamingException {
         createRegisteredUser("bobNonExisting", "bob", true);
         createRegisteredUser("jimExisting", "jim", true);
         createRegisteredUser(null, "ben", true);
         createRegisteredUser(null, "joe", false);
 
-        Set<RegisteredUser> members = ldapScanningBean.getWhitelistedUsersWithoutLdapAccount();
+        List<RegisteredUser> members = ldapScanningBean.getWhitelistedUsers();
         assertThat(members)
                 .extracting("githubName")
-                .containsOnly("ben", "bob");
+                .containsOnly("ben", "bob", "jim");
     }
 
     @Test
-    public void testWhitelistedUsersWithoutLdapAccountCaseInsensitive() throws NamingException {
-        createRegisteredUser("bobNonExisting", "BOB", true);
-        createRegisteredUser("jimExisting", "JIM", true);
-        createRegisteredUser(null, "BEN", true);
-
-        Set<RegisteredUser> members = ldapScanningBean.getWhitelistedUsersWithoutLdapAccount();
-        assertThat(members)
-                .extracting("githubName")
-                .containsOnly("BEN", "BOB");
-    }
-
-    @Test
-    public void testWhitelistedUsersWithLdapAccount() throws NamingException {
-        createRegisteredUser("bobNonExisting", "bob", true);
-        createRegisteredUser("jimExisting", "jim", "responsible guy", true);
-        createRegisteredUser(null, "ben", true);
-        createRegisteredUser(null, "joe", false);
-
-        Set<RegisteredUser> members = ldapScanningBean.getWhitelistedUsersWithLdapAccount();
-        assertThat(members)
-                .extracting("githubName", "responsiblePerson")
-                .containsOnly(
-                        Tuple.tuple("jim", "responsible guy")
-                );
-    }
-
-    @Test
-    public void testWhitelistedUsersWithLdapAccountCaseInsensitive() throws NamingException {
+    public void testWhitelistedUsersCaseInsensitive() throws NamingException {
         createRegisteredUser("bobNonExisting", "BOB", true);
         createRegisteredUser("jimExisting", "JIM", "responsible guy", true);
         createRegisteredUser(null, "BEN", true);
         createRegisteredUser(null, "JOE", false);
 
-        Set<RegisteredUser> members = ldapScanningBean.getWhitelistedUsersWithLdapAccount();
+        List<RegisteredUser> members = ldapScanningBean.getWhitelistedUsers();
         assertThat(members)
                 .extracting("githubName", "responsiblePerson")
                 .containsOnly(
-                        Tuple.tuple("JIM", "responsible guy")
+                        Tuple.tuple("JIM", "responsible guy"),
+                        Tuple.tuple("BOB", null),
+                        Tuple.tuple("BEN", null)
                 );
     }
 

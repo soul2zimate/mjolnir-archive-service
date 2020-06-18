@@ -19,14 +19,13 @@ import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 @RunWith(CdiTestRunner.class)
-public class WhitelistedUsersWithoutLdapReportTableTestCase {
+public class WhitelistedUsersReportTableTestCase {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(8089);
@@ -38,7 +37,7 @@ public class WhitelistedUsersWithoutLdapReportTableTestCase {
     private LdapScanningBean ldapScanningBean;
 
     @Inject
-    private WhitelistedUsersWithoutLdapReportTable whitelistedUsersWithoutLdapReportTable;
+    private WhitelistedUsersReportTable whitelistedUsersReportTable;
 
     @Before
     public void setup() {
@@ -47,33 +46,32 @@ public class WhitelistedUsersWithoutLdapReportTableTestCase {
         RegisteredUser registeredUser = new RegisteredUser();
         registeredUser.setGithubName("bob");
         registeredUser.setKerberosName("bobNonExisting");
-        registeredUser.setResponsiblePerson("Responsible guy");
         registeredUser.setWhitelisted(true);
         em.persist(registeredUser);
 
         registeredUser = new RegisteredUser();
         registeredUser.setGithubName("jim");
         registeredUser.setKerberosName("jimExisting");
+        registeredUser.setResponsiblePerson("Responsible guy");
         registeredUser.setWhitelisted(true);
         em.persist(registeredUser);
 
         registeredUser = new RegisteredUser();
         registeredUser.setGithubName("carl");
-        registeredUser.setKerberosName("carlNonExisting");
+        registeredUser.setKerberosName("carlExisting");
         registeredUser.setResponsiblePerson("Responsible guy");
         registeredUser.setWhitelisted(true);
         em.persist(registeredUser);
 
         registeredUser = new RegisteredUser();
         registeredUser.setGithubName("sam");
-        registeredUser.setKerberosName("samNonExisting");
+        registeredUser.setKerberosName("samExisting");
         registeredUser.setResponsiblePerson("Responsible guy");
         registeredUser.setWhitelisted(true);
         em.persist(registeredUser);
 
         registeredUser = new RegisteredUser();
         registeredUser.setGithubName("bruno");
-        registeredUser.setResponsiblePerson("Responsible guy");
         registeredUser.setWhitelisted(true);
         em.persist(registeredUser);
 
@@ -89,23 +87,21 @@ public class WhitelistedUsersWithoutLdapReportTableTestCase {
     public void testComposeTableBody() throws NamingException, NoSuchFieldException, IllegalAccessException {
         LdapDiscoveryBean ldapDiscoveryBean = mock(LdapDiscoveryBean.class);
         doReturn(false).when(ldapDiscoveryBean).checkUserExists("bobNonExisting");
-        doReturn(false).when(ldapDiscoveryBean).checkUserExists("carlNonExisting");
-        doReturn(false).when(ldapDiscoveryBean).checkUserExists("samNonExisting");
         doReturn(true).when(ldapDiscoveryBean).checkUserExists("jimExisting");
+        doReturn(true).when(ldapDiscoveryBean).checkUserExists("carlExisting");
+        doReturn(true).when(ldapDiscoveryBean).checkUserExists("samExisting");
 
         Field ldapDiscoveryBeanField = LdapScanningBean.class.getDeclaredField("ldapDiscoveryBean");
         ldapDiscoveryBeanField.setAccessible(true);
         ldapDiscoveryBeanField.set(ldapScanningBean, ldapDiscoveryBean);
 
-        Field ldapScanningBeanField = WhitelistedUserReportTable.class.getDeclaredField("ldapScanningBean");
-        ldapScanningBeanField.setAccessible(true);
-        ldapScanningBeanField.set(whitelistedUsersWithoutLdapReportTable, ldapScanningBean);
+        whitelistedUsersReportTable.ldapScanningBean = ldapScanningBean;
 
-        Set<RegisteredUser> users = ldapScanningBean.getWhitelistedUsersWithoutLdapAccount();
+        List<RegisteredUser> users = ldapScanningBean.getWhitelistedUsers();
         List<RegisteredUser> usersList = new ArrayList<>(users);
-        usersList.sort((user1, user2) -> user1.getGithubName().compareToIgnoreCase(user2.getGithubName()));
+        usersList.sort(new WhitelistedUsersReportTable.GitHubNameComparator());
 
-        String messageBody = whitelistedUsersWithoutLdapReportTable.composeTable();
+        String messageBody = whitelistedUsersReportTable.composeTable();
         Document doc = Jsoup.parse(messageBody);
 
         assertThat(doc.select("tr").size()).isEqualTo(users.size() + 1);
@@ -116,8 +112,12 @@ public class WhitelistedUsersWithoutLdapReportTableTestCase {
 
         int i = 0;
         for (RegisteredUser user : usersList) {
-            assertThat(user.getGithubName()).isEqualTo(elements.get(i).childNode(0).toString());
-            assertThat(user.getResponsiblePerson()).isEqualTo(elements.get(i + 1).childNode(0).toString());
+            assertThat(elements.get(i).childNode(0).toString()).isEqualTo(user.getGithubName());
+            if (elements.get(i + 1).childNodeSize() == 0) {
+                assertThat(user.getResponsiblePerson()).isNullOrEmpty();
+            } else {
+                assertThat(elements.get(i + 1).childNode(0).toString()).isEqualTo(user.getResponsiblePerson());
+            }
             i += 2;
         }
     }
