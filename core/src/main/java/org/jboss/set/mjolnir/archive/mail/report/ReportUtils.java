@@ -5,6 +5,9 @@ public final class ReportUtils {
     private ReportUtils() {
     }
 
+    /**
+     * Returns given string if it's not null, otherwise returns empty string.
+     */
     public static String stringOrEmpty(String str) {
         return str == null ? "" : str;
     }

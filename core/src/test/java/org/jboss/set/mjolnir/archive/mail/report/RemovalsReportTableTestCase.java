@@ -56,6 +56,9 @@ public class RemovalsReportTableTestCase {
         userRemoval = createUserRemoval("User2", oneDayLater, oneDayLater, RemovalStatus.FAILED);
         em.persist(userRemoval);
 
+        userRemoval = createUserRemoval(null, "ghUser", oneDayLater, oneDayLater, RemovalStatus.FAILED);
+        em.persist(userRemoval);
+
         em.getTransaction().commit();
     }
 
@@ -69,16 +72,26 @@ public class RemovalsReportTableTestCase {
         Document doc = Jsoup.parse(messageBody);
 
         assertThat(doc.select("tr").size()).isEqualTo(lastFinishedRemovals.size() + 1);
-        assertThat(doc.select("th").text()).isEqualTo("LDAP Username Created Started Status");
+        assertThat(doc.select("th").text()).isEqualTo("LDAP Name GH Name Created Started Status");
 
+        final int columnsInRow = 5;
         Elements elements = doc.select("td");
-        assertThat(elements.size()).isEqualTo(lastFinishedRemovals.size() * 4);
+        assertThat(elements.size()).isEqualTo(lastFinishedRemovals.size() * columnsInRow);
 
         for (int i = 0; i < lastFinishedRemovals.size(); i++) {
-            assertThat(elements.get((i * 4)).childNode(0).toString()).isEqualTo(lastFinishedRemovals.get(i).getLdapUsername());
-            assertThat(elements.get((i * 4) + 1).childNode(0).toString()).isEqualTo(noMillisFormat.format(lastFinishedRemovals.get(i).getCreated()));
-            assertThat(elements.get((i * 4) + 2).childNode(0).toString()).isEqualTo(noMillisFormat.format(lastFinishedRemovals.get(i).getStarted()));
-            assertThat(elements.get((i * 4) + 3).childNode(0).toString()).isEqualTo(lastFinishedRemovals.get(i).getStatus().toString());
+            if (lastFinishedRemovals.get(i).getLdapUsername() != null) {
+                assertThat(elements.get((i * columnsInRow)).childNode(0).toString()).isEqualTo(lastFinishedRemovals.get(i).getLdapUsername());
+            } else {
+                assertThat(elements.get((i * columnsInRow)).childNodeSize()).isEqualTo(0);
+            }
+            if (lastFinishedRemovals.get(i).getGithubUsername() != null) {
+                assertThat(elements.get((i * columnsInRow) + 1).childNode(0).toString()).isEqualTo(lastFinishedRemovals.get(i).getGithubUsername());
+            } else {
+                assertThat(elements.get((i * columnsInRow) + 1).childNodeSize()).isEqualTo(0);
+            }
+            assertThat(elements.get((i * columnsInRow) + 2).childNode(0).toString()).isEqualTo(noMillisFormat.format(lastFinishedRemovals.get(i).getCreated()));
+            assertThat(elements.get((i * columnsInRow) + 3).childNode(0).toString()).isEqualTo(noMillisFormat.format(lastFinishedRemovals.get(i).getStarted()));
+            assertThat(elements.get((i * columnsInRow) + 4).childNode(0).toString()).isEqualTo(lastFinishedRemovals.get(i).getStatus().toString());
         }
     }
 }
