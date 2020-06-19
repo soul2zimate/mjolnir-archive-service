@@ -128,7 +128,7 @@ public class LdapScanningBeanTestCase {
         // check removals were created
         List<UserRemoval> removals = query.getResultList();
         assertThat(removals)
-                .extracting("username")
+                .extracting("ldapUsername")
                 .containsOnly("ben", "bob");
 
         // create the same removals again
@@ -138,7 +138,7 @@ public class LdapScanningBeanTestCase {
         removals = query.getResultList();
         assertThat(removals.size()).isEqualTo(2);
         assertThat(removals)
-                .extracting("username")
+                .extracting("ldapUsername")
                 .containsOnly("ben", "bob");
     }
 
@@ -212,7 +212,7 @@ public class LdapScanningBeanTestCase {
         TypedQuery<UserRemoval> query = em.createNamedQuery(UserRemoval.FIND_REMOVALS_TO_PROCESS, UserRemoval.class);
         List<UserRemoval> removals = query.getResultList();
         assertThat(removals)
-                .extracting("username")
+                .extracting("ldapUsername")
                 .containsOnly("ben", "bob");
     }
 
@@ -226,7 +226,7 @@ public class LdapScanningBeanTestCase {
         TypedQuery<UserRemoval> query = em.createNamedQuery(UserRemoval.FIND_REMOVALS_TO_PROCESS, UserRemoval.class);
         List<UserRemoval> removals = query.getResultList();
         assertThat(removals)
-                .extracting("username")
+                .extracting("ldapUsername")
                 .containsOnly("ben", "bob");
     }
 
@@ -244,7 +244,7 @@ public class LdapScanningBeanTestCase {
         List<UserRemoval> removals = query.getResultList();
         assertThat(removals.size()).isEqualTo(2);
         assertThat(removals)
-                .extracting("username")
+                .extracting("ldapUsername")
                 .containsOnly("ben", "bob");
     }
 
@@ -266,7 +266,7 @@ public class LdapScanningBeanTestCase {
 
     private void createUserRemoval(String username) {
         UserRemoval userRemoval = new UserRemoval();
-        userRemoval.setUsername(username);
+        userRemoval.setLdapUsername(username);
 
         em.getTransaction().begin();
         em.persist(userRemoval);

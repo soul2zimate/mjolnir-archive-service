@@ -14,7 +14,7 @@ import static j2html.TagCreator.th;
 
 public class RemovalsReportTable implements ReportTable {
 
-    private static final String NAME_LABEL = "Username";
+    private static final String NAME_LABEL = "LDAP Username";
     private static final String CREATED_LABEL = "Created";
     private static final String STARTED_LABEL = "Started";
     private static final String STATUS_LABEL = "Status";
@@ -43,7 +43,7 @@ public class RemovalsReportTable implements ReportTable {
         SimpleDateFormat noMillisFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
         return each(removals, removal -> tr(
-                td(removal.getUsername()).withStyle(Styles.TD_STYLE),
+                td(removal.getLdapUsername()).withStyle(Styles.TD_STYLE),
                 td(noMillisFormat.format(removal.getCreated())).withStyle(Styles.TD_STYLE),
                 td(noMillisFormat.format(removal.getStarted())).withStyle(Styles.TD_STYLE),
                 RemovalStatus.COMPLETED.equals(removal.getStatus()) ?

@@ -69,13 +69,13 @@ public class RemovalsReportTableTestCase {
         Document doc = Jsoup.parse(messageBody);
 
         assertThat(doc.select("tr").size()).isEqualTo(lastFinishedRemovals.size() + 1);
-        assertThat(doc.select("th").text()).isEqualTo("Username Created Started Status");
+        assertThat(doc.select("th").text()).isEqualTo("LDAP Username Created Started Status");
 
         Elements elements = doc.select("td");
         assertThat(elements.size()).isEqualTo(lastFinishedRemovals.size() * 4);
 
         for (int i = 0; i < lastFinishedRemovals.size(); i++) {
-            assertThat(elements.get((i * 4)).childNode(0).toString()).isEqualTo(lastFinishedRemovals.get(i).getUsername());
+            assertThat(elements.get((i * 4)).childNode(0).toString()).isEqualTo(lastFinishedRemovals.get(i).getLdapUsername());
             assertThat(elements.get((i * 4) + 1).childNode(0).toString()).isEqualTo(noMillisFormat.format(lastFinishedRemovals.get(i).getCreated()));
             assertThat(elements.get((i * 4) + 2).childNode(0).toString()).isEqualTo(noMillisFormat.format(lastFinishedRemovals.get(i).getStarted()));
             assertThat(elements.get((i * 4) + 3).childNode(0).toString()).isEqualTo(lastFinishedRemovals.get(i).getStatus().toString());

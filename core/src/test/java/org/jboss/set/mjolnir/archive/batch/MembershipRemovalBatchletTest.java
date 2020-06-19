@@ -47,17 +47,21 @@ public class MembershipRemovalBatchletTest {
         em.getTransaction().begin();
 
         UserRemoval userRemoval = new UserRemoval();
-        userRemoval.setUsername("thofman");
+        userRemoval.setLdapUsername("thofman");
         em.persist(userRemoval);
 
         userRemoval = new UserRemoval();
-        userRemoval.setUsername("lvydra");
+        userRemoval.setLdapUsername("lvydra");
         userRemoval.setRemoveOn(new Date(System.currentTimeMillis() - (24 * 3600 * 1000))); // removal date 1 day in past
         em.persist(userRemoval);
 
         userRemoval = new UserRemoval();
-        userRemoval.setUsername("future");
+        userRemoval.setLdapUsername("future");
         userRemoval.setRemoveOn(new Date(System.currentTimeMillis() + (24 * 3600 * 1000))); // removal date 1 day in future
+        em.persist(userRemoval);
+
+        userRemoval = new UserRemoval();
+        userRemoval.setGithubUsername("GitHubUsername");
         em.persist(userRemoval);
 
         em.getTransaction().commit();
@@ -69,9 +73,11 @@ public class MembershipRemovalBatchletTest {
         TypedQuery<UserRemoval> findRemovalsQuery = em.createNamedQuery(UserRemoval.FIND_REMOVALS_TO_PROCESS, UserRemoval.class);
         List<UserRemoval> removals = findRemovalsQuery.getResultList();
         assertThat(removals)
-                .extracting("username")
-                .containsOnly("thofman", "lvydra");
-        assertThat(removals.size()).isEqualTo(2);
+                .extracting("ldapUsername", "githubUsername")
+                .containsOnly(Tuple.tuple("thofman", null),
+                        Tuple.tuple("lvydra", null),
+                        Tuple.tuple(null, "GitHubUsername"));
+        assertThat(removals.size()).isEqualTo(3);
 
         // let the batchlet load the removals
         batchlet.loadRemovalsToProcess();
@@ -111,8 +117,8 @@ public class MembershipRemovalBatchletTest {
         assertThat(removalsToProcess.size()).isEqualTo(0);
 
         // verify processed removal state
-        List<UserRemoval> removals = em.createQuery("SELECT r FROM UserRemoval r where r.username = :username", UserRemoval.class)
-                .setParameter("username", "thofman")
+        List<UserRemoval> removals = em.createQuery("SELECT r FROM UserRemoval r where r.ldapUsername = :ldapUsername", UserRemoval.class)
+                .setParameter("ldapUsername", "thofman")
                 .getResultList();
         assertThat(removals.size()).isEqualTo(1);
         assertThat(removals.get(0)).satisfies(removal -> {
@@ -130,9 +136,9 @@ public class MembershipRemovalBatchletTest {
                     );
         });
 
-        // verify unprocessed removal state
-        removals = em.createQuery("SELECT r FROM UserRemoval r where r.username = :username", UserRemoval.class)
-                .setParameter("username", "lvydra")
+        // verify unprocessed removal state (no github name registered)
+        removals = em.createQuery("SELECT r FROM UserRemoval r where r.ldapUsername = :ldapUsername", UserRemoval.class)
+                .setParameter("ldapUsername", "lvydra")
                 .getResultList();
         assertThat(removals.size()).isEqualTo(1);
         assertThat(removals.get(0)).satisfies(removal -> {
@@ -141,6 +147,18 @@ public class MembershipRemovalBatchletTest {
             assertThat(removal.getLogs())
                     .extracting("message")
                     .contains("Ignoring removal request for user lvydra");
+        });
+
+        // verify processed removal state
+        removals = em.createQuery("SELECT r FROM UserRemoval r where r.githubUsername = :githubUsername", UserRemoval.class)
+                .setParameter("githubUsername", "GitHubUsername")
+                .getResultList();
+        assertThat(removals.size()).isEqualTo(1);
+        assertThat(removals.get(0)).satisfies(removal -> {
+            em.refresh(removal);
+            assertThat(removal.getStatus()).isEqualTo(RemovalStatus.COMPLETED);
+            assertThat(removal.getStarted()).isNotNull();
+            assertThat(removal.getCompleted()).isNotNull();
         });
 
         // verify that repositories were archived (ArchivingBean is mocked)

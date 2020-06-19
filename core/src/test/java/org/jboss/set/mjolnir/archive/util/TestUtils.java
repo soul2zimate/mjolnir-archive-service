@@ -66,7 +66,7 @@ public final class TestUtils {
         statusField.setAccessible(true);
 
         UserRemoval userRemoval = new UserRemoval();
-        userRemoval.setUsername(user);
+        userRemoval.setLdapUsername(user);
         userRemoval.setStarted(timeStarted);
 
         completedField.set(userRemoval, timeCompleted);

@@ -1,5 +1,6 @@
 package org.jboss.set.mjolnir.archive.batch;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.egit.github.core.Repository;
 import org.jboss.logging.Logger;
 import org.jboss.set.mjolnir.archive.ArchivingBean;
@@ -31,7 +32,7 @@ import java.util.stream.Collectors;
 @Named
 public class MembershipRemovalBatchlet extends AbstractBatchlet {
 
-    private Logger logger = Logger.getLogger(getClass());
+    private final Logger logger = Logger.getLogger(getClass());
 
     @Inject
     private EntityManager em;
@@ -66,7 +67,7 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
                 successful = false;
                 
                 // log error to db
-                logError(removal, "Failed to process user: " + removal.getUsername(), e);
+                logError(removal, "Failed to process removal: " + removal.toString(), e);
 
                 removal.setStatus(RemovalStatus.FAILED);
                 em.persist(removal);
@@ -128,17 +129,32 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
      */
     boolean processRemoval(UserRemoval removal) {
 
-        // determine user's github username
-
-        String gitHubUsername = findGitHubUsername(removal.getUsername());
-        if (gitHubUsername == null) {
-            logMessage(removal, "Ignoring removal request for user " + removal.getUsername());
-
-            removal.setStatus(RemovalStatus.UNKNOWN_USER);
+        // validate that either ldap username or github username is specified
+        if (StringUtils.isBlank(removal.getGithubUsername()) && StringUtils.isBlank(removal.getLdapUsername())) {
+            logger.warnf("Ignoring removal #%d, neither GitHub username or LDAP username were specified.", removal.getId());
+            removal.setStatus(RemovalStatus.INVALID);
             em.persist(removal);
-            return true;
+            return false;
         }
-        logger.infof("Found GitHub username for user %s", removal.getUsername());
+
+        // determine user's github username
+        String gitHubUsername;
+
+        if (StringUtils.isNotBlank(removal.getGithubUsername())) {
+            gitHubUsername = removal.getGithubUsername();
+            logger.infof("Processing removal of GitHub user %s", gitHubUsername);
+        } else {
+            gitHubUsername = findGitHubUsername(removal.getLdapUsername());
+            if (gitHubUsername == null) {
+                logMessage(removal, "Ignoring removal request for user " + removal.getLdapUsername());
+
+                removal.setStatus(RemovalStatus.UNKNOWN_USER);
+                em.persist(removal);
+                return true;
+            }
+            logger.infof("Processing removal of LDAP user %s, GitHub username %s",
+                    removal.getLdapUsername(), gitHubUsername);
+        }
 
 
         // obtain list of monitored GitHub organizations & teams
@@ -152,7 +168,7 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
             Set<Repository> repositoriesToArchive;
             try {
                 logger.infof("Looking for repositories belonging to user %s that are forks of organization %s repositories.",
-                        removal.getUsername(), organization.getName());
+                        gitHubUsername, organization.getName());
                 repositoriesToArchive = discoveryBean.getRepositoriesToArchive(organization.getName(), gitHubUsername);
                 logger.infof("Found following repositories to archive: %s",
                         repositoriesToArchive.stream().map(Repository::generateId).collect(Collectors.toList()));
@@ -197,7 +213,7 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
                 try {
                     userRemovalBean.removeUserFromTeams(organization.getName(), gitHubUsername);
                 } catch (IOException e) {
-                    logError(removal, "Couldn't remove user membership from GitHub teams: " + removal.getUsername(), e);
+                    logError(removal, "Couldn't remove user membership from GitHub teams: " + gitHubUsername, e);
 
                     removal.setStatus(RemovalStatus.FAILED);
                     em.persist(removal);
@@ -205,9 +221,8 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
                     return false;
                 }
             } else {
-                logger.infof("User membership is not removed for user %s", removal.getUsername());
+                logger.infof("User membership of user %s is not removed", gitHubUsername);
             }
-
         }
 
         removal.setStatus(RemovalStatus.COMPLETED);
@@ -226,7 +241,7 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
     }
 
     private void logError(UserRemoval removal, String message, Throwable t) {
-        logger.errorf(t, message, removal.getUsername());
+        logger.errorf(t, message);
 
         RemovalLog log = new RemovalLog();
         log.setUserRemoval(removal);

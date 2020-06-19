@@ -42,7 +42,11 @@ public class UserRemoval {
     @SuppressWarnings("unused")
     private Long id;
 
-    private String username;
+    @Column(name = "ldap_username")
+    private String ldapUsername;
+
+    @Column(name = "github_username")
+    private String githubUsername;
 
     /**
      * When should the membership be removed?
@@ -94,12 +98,20 @@ public class UserRemoval {
         this.started = started;
     }
 
-    public String getUsername() {
-        return username;
+    public String getLdapUsername() {
+        return ldapUsername;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setLdapUsername(String ldapUsername) {
+        this.ldapUsername = ldapUsername;
+    }
+
+    public String getGithubUsername() {
+        return githubUsername;
+    }
+
+    public void setGithubUsername(String githubUsername) {
+        this.githubUsername = githubUsername;
     }
 
     public Timestamp getCreated() {
@@ -133,5 +145,19 @@ public class UserRemoval {
 
     public void setLogs(List<RemovalLog> logs) {
         this.logs = logs;
+    }
+
+    @Override
+    public String toString() {
+        return "UserRemoval{" +
+                "id=" + id +
+                ", ldapUsername='" + ldapUsername + '\'' +
+                ", githubUsername='" + githubUsername + '\'' +
+                ", removeOn=" + removeOn +
+                ", created=" + created +
+                ", started=" + started +
+                ", completed=" + completed +
+                ", status=" + status +
+                '}';
     }
 }

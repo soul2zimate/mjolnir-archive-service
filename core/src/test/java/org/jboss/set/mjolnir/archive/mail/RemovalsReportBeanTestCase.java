@@ -87,7 +87,7 @@ public class RemovalsReportBeanTestCase {
 
         assertThat(lastFinishedRemovals.size()).isEqualTo(6);
         assertThat(lastFinishedRemovals)
-                .extracting("username", "status")
+                .extracting("ldapUsername", "status")
                 .containsOnly(
                         tuple("user6", RemovalStatus.UNKNOWN_USER),
                         tuple("user7", RemovalStatus.UNKNOWN_USER),
