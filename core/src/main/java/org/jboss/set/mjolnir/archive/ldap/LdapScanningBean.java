@@ -4,7 +4,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.egit.github.core.Team;
 import org.eclipse.egit.github.core.User;
 import org.jboss.logging.Logger;
-import org.jboss.set.mjolnir.archive.configuration.Configuration;
 import org.jboss.set.mjolnir.archive.domain.GitHubOrganization;
 import org.jboss.set.mjolnir.archive.domain.RegisteredUser;
 import org.jboss.set.mjolnir.archive.domain.RemovalLog;
@@ -24,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
@@ -73,13 +70,13 @@ public class LdapScanningBean {
         logger.infof("Starting job to create user removals");
 
         // get users without ldap account
-        Set<String> usersWithoutLdapAccount = getUsersWithoutLdapAccount();
+        Collection<String> usersWithoutLdapAccount = getUsersWithoutLdapAccount();
 
         // create removal records
         createUserRemovals(usersWithoutLdapAccount);
     }
 
-    public Set<String> getUsersWithoutLdapAccount() throws IOException, NamingException {
+    public List<String> getUsersWithoutLdapAccount() throws IOException, NamingException {
         // collect members of all teams
         Set<String> allMembers = getAllOrganizationsMembers();
         logger.infof("Found %d members of all organizations teams.", allMembers.size());
@@ -102,33 +99,13 @@ public class LdapScanningBean {
 
         // search for users that do not have active LDAP account
         Map<String, Boolean> usersLdapMap = ldapDiscoveryBean.checkUsersExists(krbNames);
-        SortedSet<String> usersWithoutLdapAccount = usersLdapMap.entrySet().stream()
+        List<String> usersWithoutLdapAccount = usersLdapMap.entrySet().stream()
                 .filter(entry -> !entry.getValue())
                 .map(Map.Entry::getKey)
-                .collect(Collectors.toCollection(TreeSet::new));
+                .collect(Collectors.toList());
         logger.infof("Detected %d users that do not have active LDAP account.", usersWithoutLdapAccount.size());
 
         return usersWithoutLdapAccount;
-    }
-
-    public Set<RegisteredUser> getWhitelistedUsersWithoutLdapAccount() throws NamingException {
-        SortedSet<RegisteredUser> whitelistedUsersWithoutLdapAccount = new TreeSet<>((firstUser, secondUser) -> firstUser.getGithubName().compareToIgnoreCase(secondUser.getGithubName()));
-        for (RegisteredUser whitelistedUser : getWhitelistedUsers()) {
-            if (StringUtils.isBlank(whitelistedUser.getKerberosName()) || !ldapDiscoveryBean.checkUserExists(whitelistedUser.getKerberosName()))
-                whitelistedUsersWithoutLdapAccount.add(whitelistedUser);
-        }
-
-        return whitelistedUsersWithoutLdapAccount;
-    }
-
-    public Set<RegisteredUser> getWhitelistedUsersWithLdapAccount() throws NamingException {
-        SortedSet<RegisteredUser> whitelistedUsersWithLdapAccount = new TreeSet<>((firstUser, secondUser) -> firstUser.getGithubName().compareToIgnoreCase(secondUser.getGithubName()));
-        for (RegisteredUser whitelistedUser : getWhitelistedUsers()) {
-            if (!StringUtils.isBlank(whitelistedUser.getKerberosName()) && ldapDiscoveryBean.checkUserExists(whitelistedUser.getKerberosName()))
-                whitelistedUsersWithLdapAccount.add(whitelistedUser);
-        }
-
-        return whitelistedUsersWithLdapAccount;
     }
 
     public List<RegisteredUser> getWhitelistedUsers() {
@@ -200,9 +177,7 @@ public class LdapScanningBean {
 
         Set<String> existingUserNamesToProcess = getExistingUserNamesToProcess();
 
-        krbNames.forEach(username -> {
-            createUniqueUserRemoval(existingUserNamesToProcess, username);
-        });
+        krbNames.forEach(username -> createUniqueUserRemoval(existingUserNamesToProcess, username));
 
         em.getTransaction().commit();
     }
