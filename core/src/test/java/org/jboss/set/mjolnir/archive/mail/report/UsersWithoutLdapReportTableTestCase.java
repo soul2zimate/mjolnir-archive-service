@@ -51,12 +51,6 @@ public class UsersWithoutLdapReportTableTestCase {
 
     @Before
     public void setup() throws IOException, URISyntaxException, NamingException {
-        stubFor(get(urlPathEqualTo("/api/v3/orgs/testorg/teams"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(readSampleResponse("responses/gh-orgs-teams-response.json"))));
-
         stubFor(get(urlPathEqualTo("/api/v3/orgs/testorg/team/1/members"))
                 .willReturn(aResponse()
                         .withStatus(200)
@@ -100,6 +94,8 @@ public class UsersWithoutLdapReportTableTestCase {
     @Test
     public void testComposeTableBody() throws IOException, NamingException {
         List<String> users = ldapScanningBean.getUsersWithoutLdapAccount();
+        assertThat(users).containsOnly("ben", "bob");
+
         List<String> usersList = new ArrayList<>(users);
         usersList.sort(String::compareToIgnoreCase);
 

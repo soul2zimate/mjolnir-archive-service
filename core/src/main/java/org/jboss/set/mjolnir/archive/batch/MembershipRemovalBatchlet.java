@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.egit.github.core.Repository;
 import org.jboss.logging.Logger;
 import org.jboss.set.mjolnir.archive.ArchivingBean;
+import org.jboss.set.mjolnir.archive.domain.GitHubTeam;
 import org.jboss.set.mjolnir.archive.github.GitHubDiscoveryBean;
 import org.jboss.set.mjolnir.archive.github.GitHubTeamServiceBean;
 import org.jboss.set.mjolnir.archive.configuration.Configuration;
@@ -47,7 +48,7 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
     private ArchivingBean archivingBean;
 
     @Inject
-    private GitHubTeamServiceBean userRemovalBean;
+    private GitHubTeamServiceBean teamServiceBean;
 
     @Override
     public String process() {
@@ -208,10 +209,11 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
             }
 
             // remove team memberships
-
+            logger.infof("User is about to be removed from following teams: %s",
+                    organization.getTeams().stream().map(GitHubTeam::getName).collect(Collectors.joining(", ")));
             if (configuration.isUnsubscribeUsers()) {
                 try {
-                    userRemovalBean.removeUserFromTeams(organization.getName(), gitHubUsername);
+                    teamServiceBean.removeUserFromTeams(organization, gitHubUsername);
                 } catch (IOException e) {
                     logError(removal, "Couldn't remove user membership from GitHub teams: " + gitHubUsername, e);
 
@@ -221,7 +223,7 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
                     return false;
                 }
             } else {
-                logger.infof("User membership of user %s is not removed", gitHubUsername);
+                logger.infof("Membership removal is disabled, membership has not been removed.", gitHubUsername);
             }
         }
 

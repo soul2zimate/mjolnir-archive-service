@@ -94,7 +94,7 @@ public class MembershipRemovalBatchletTest {
         assertThat(orgs.get(0).getName()).isEqualTo("testorg");
         assertThat(orgs.get(0).getTeams())
                 .extracting("name")
-                .containsOnly("Test Team", "Other Team");
+                .containsOnly("Team 1", "Team 2", "Team 3");
     }
 
     @Test

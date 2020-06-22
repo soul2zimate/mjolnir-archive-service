@@ -1,7 +1,7 @@
 package org.jboss.set.mjolnir.archive.mail.report;
 
 import j2html.tags.DomContent;
-import org.eclipse.egit.github.core.Team;
+import org.jboss.set.mjolnir.archive.domain.GitHubTeam;
 import org.jboss.set.mjolnir.archive.ldap.LdapScanningBean;
 
 import javax.inject.Inject;
@@ -48,7 +48,7 @@ public class UnregisteredMembersReportTable implements ReportTable {
         return html;
     }
 
-    private <T> DomContent addUnregisteredOrganizationMembersRows(Map<String, List<Team>> userTeams) {
+    private <T> DomContent addUnregisteredOrganizationMembersRows(Map<String, List<GitHubTeam>> userTeams) {
         return each(userTeams, userTeam -> tr(
                 td(userTeam.getKey()).withStyle(Styles.TD_STYLE),
                 td(
@@ -58,9 +58,9 @@ public class UnregisteredMembersReportTable implements ReportTable {
         ));
     }
 
-    private Map<String, List<Team>> getUnregisteredMembersWithTeams() throws IOException {
+    private Map<String, List<GitHubTeam>> getUnregisteredMembersWithTeams() throws IOException {
         Set<String> unregisteredOrganizationMembers = ldapScanningBean.getUnregisteredOrganizationMembers();
-        SortedMap<String, List<Team>> userTeams = new TreeMap<>(String::compareToIgnoreCase);
+        SortedMap<String, List<GitHubTeam>> userTeams = new TreeMap<>(String::compareToIgnoreCase);
         for (String member : unregisteredOrganizationMembers) {
             userTeams.put(member, ldapScanningBean.getAllUsersTeams(member));
         }

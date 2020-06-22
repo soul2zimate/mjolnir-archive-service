@@ -3,7 +3,7 @@ create sequence sq_user_removals;
 create table user_removals (
     id bigint default nextval('sq_user_removals') primary key,
     completed timestamp,
-    created timestamp,
+    created timestamp default current_timestamp,
     remove_on date,
     started timestamp,
     status varchar(255),

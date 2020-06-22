@@ -1,9 +1,10 @@
 package org.jboss.set.mjolnir.archive.github;
 
-import org.eclipse.egit.github.core.Team;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.jboss.logging.Logger;
+import org.jboss.set.mjolnir.archive.domain.GitHubOrganization;
+import org.jboss.set.mjolnir.archive.domain.GitHubTeam;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -16,9 +17,9 @@ import java.util.Set;
  */
 public class GitHubTeamServiceBean {
 
-    private Logger logger = Logger.getLogger(getClass());
+    private final Logger logger = Logger.getLogger(getClass());
 
-    private CustomizedTeamService teamService;
+    private final CustomizedTeamService teamService;
 
     @Inject
     public GitHubTeamServiceBean(GitHubClient client) {
@@ -31,15 +32,17 @@ public class GitHubTeamServiceBean {
      * @param organisation github organization
      * @param githubUser   github username
      */
-    public void removeUserFromTeams(String organisation, String githubUser) throws IOException {
-        logger.infof("Removing %s users team memberships", githubUser);
+    public void removeUserFromTeams(GitHubOrganization organisation, String githubUser) throws IOException {
+        logger.infof("Removing team memberships of user %s", githubUser);
 
-        List<Team> organizationTeams = getTeams(organisation);
+        List<GitHubTeam> teams = organisation.getTeams();
 
-        for (Team team : organizationTeams) {
+        for (GitHubTeam team : teams) {
             if (isMember(githubUser, team)) {
-                logger.infof("Removing %s users %s team membership", githubUser, team.getName());
-                teamService.removeMember(team.getId(), githubUser);
+                logger.infof("Removing membership of user %s in team %s", githubUser, team.getName());
+                removeMembership(githubUser, team);
+            } else {
+                logger.infof("User %s is not a member of team %s", githubUser, team.getName());
             }
         }
     }
@@ -47,20 +50,19 @@ public class GitHubTeamServiceBean {
     /**
      * Retrieves members of all organization teams.
      */
-    public Set<User> getAllTeamsMembers(String organization) throws IOException {
-        List<Team> teams = teamService.getTeams(organization);
+    public Set<User> getAllTeamsMembers(GitHubOrganization organization) throws IOException {
         Set<User> members = new HashSet<>();
-        for (Team team : teams) {
-            members.addAll(teamService.getMembers(organization, team.getId()));
+        for (GitHubTeam team : organization.getTeams()) {
+            members.addAll(teamService.getMembers(organization.getName(), team.getGithubId()));
         }
         return members;
     }
 
-    public List<Team> getTeams(String organisation) throws IOException {
-        return teamService.getTeams(organisation);
+    public boolean isMember(String githubUser, GitHubTeam team) throws IOException {
+        return teamService.isMember(team.getGithubId(), githubUser);
     }
 
-    public boolean isMember(String githubUser, Team team) throws IOException {
-        return teamService.isMember(team.getId(), githubUser);
+    public void removeMembership(String githubUser, GitHubTeam team) throws IOException {
+        teamService.removeMember(team.getGithubId(), githubUser);
     }
 }

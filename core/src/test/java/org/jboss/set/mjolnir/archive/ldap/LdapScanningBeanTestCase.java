@@ -4,7 +4,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.apache.deltaspike.core.util.ArraysUtils;
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.assertj.core.groups.Tuple;
-import org.eclipse.egit.github.core.Team;
+import org.jboss.set.mjolnir.archive.domain.GitHubTeam;
 import org.jboss.set.mjolnir.archive.domain.RegisteredUser;
 import org.jboss.set.mjolnir.archive.domain.UserRemoval;
 import org.junit.After;
@@ -56,12 +56,6 @@ public class LdapScanningBeanTestCase {
 
 
         // stubs for GitHub API endpoints
-
-        stubFor(get(urlPathEqualTo("/api/v3/orgs/testorg/teams"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(readSampleResponse("responses/gh-orgs-teams-response.json"))));
 
         stubFor(get(urlPathEqualTo("/api/v3/orgs/testorg/team/1/members"))
                 .willReturn(aResponse()
@@ -165,7 +159,7 @@ public class LdapScanningBeanTestCase {
     }
 
     @Test
-    public void testWhitelistedUsers() throws NamingException {
+    public void testWhitelistedUsers() {
         createRegisteredUser("bobNonExisting", "bob", true);
         createRegisteredUser("jimExisting", "jim", true);
         createRegisteredUser(null, "ben", true);
@@ -178,7 +172,7 @@ public class LdapScanningBeanTestCase {
     }
 
     @Test
-    public void testWhitelistedUsersCaseInsensitive() throws NamingException {
+    public void testWhitelistedUsersCaseInsensitive() {
         createRegisteredUser("bobNonExisting", "BOB", true);
         createRegisteredUser("jimExisting", "JIM", "responsible guy", true);
         createRegisteredUser(null, "BEN", true);
@@ -196,7 +190,7 @@ public class LdapScanningBeanTestCase {
 
     @Test
     public void testAllUsersTeams() throws IOException {
-        List<Team> teams = ldapScanningBean.getAllUsersTeams("bob");
+        List<GitHubTeam> teams = ldapScanningBean.getAllUsersTeams("bob");
         assertThat(teams)
                 .extracting("name")
                 .containsOnly("Team 1", "Team 3");

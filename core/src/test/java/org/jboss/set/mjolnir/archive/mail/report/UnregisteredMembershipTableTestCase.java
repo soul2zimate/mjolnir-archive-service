@@ -2,7 +2,7 @@ package org.jboss.set.mjolnir.archive.mail.report;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.eclipse.egit.github.core.Team;
+import org.jboss.set.mjolnir.archive.domain.GitHubTeam;
 import org.jboss.set.mjolnir.archive.domain.RegisteredUser;
 import org.jboss.set.mjolnir.archive.ldap.LdapScanningBean;
 import org.jsoup.Jsoup;
@@ -19,7 +19,10 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.jboss.set.mjolnir.archive.util.TestUtils.readSampleResponse;
 
@@ -40,11 +43,6 @@ public class UnregisteredMembershipTableTestCase {
 
     @Before
     public void setup() throws IOException, URISyntaxException {
-        stubFor(get(urlPathEqualTo("/api/v3/orgs/testorg/teams"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(readSampleResponse("responses/gh-orgs-teams-response.json"))));
 
         stubFor(get(urlPathEqualTo("/api/v3/orgs/testorg/team/1/members"))
                 .willReturn(aResponse()
@@ -91,7 +89,10 @@ public class UnregisteredMembershipTableTestCase {
     public void testComposeTableBody() throws IOException {
         final String testUser = "bob";
 
-        List<Team> testUserTeams = ldapScanningBean.getAllUsersTeams(testUser);
+        List<GitHubTeam> testUserTeams = ldapScanningBean.getAllUsersTeams(testUser);
+        assertThat(testUserTeams)
+                .extracting("name")
+                .containsOnly("Team 1", "Team 3");
 
         String messageBody = unregisteredMembersReportTable.composeTable();
         Document doc = Jsoup.parse(messageBody);

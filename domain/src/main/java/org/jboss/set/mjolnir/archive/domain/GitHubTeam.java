@@ -29,7 +29,7 @@ public class GitHubTeam {
     private String name;
 
     @Column(name = "github_id", unique = true)
-    private Long githubId;
+    private Integer githubId;
 
     public GitHubTeam() {
     }
@@ -54,11 +54,11 @@ public class GitHubTeam {
         this.name = name;
     }
 
-    public Long getGithubId() {
+    public Integer getGithubId() {
         return githubId;
     }
 
-    public void setGithubId(Long githubId) {
+    public void setGithubId(Integer githubId) {
         this.githubId = githubId;
     }
 }

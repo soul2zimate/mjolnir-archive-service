@@ -1,16 +1,17 @@
 package org.jboss.set.mjolnir.archive.github;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import org.eclipse.egit.github.core.Team;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
+import org.jboss.set.mjolnir.archive.domain.GitHubOrganization;
+import org.jboss.set.mjolnir.archive.domain.GitHubTeam;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Set;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -24,7 +25,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.jboss.set.mjolnir.archive.util.TestUtils.readSampleResponse;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -33,16 +33,10 @@ public class GitHubTeamServiceBeanTestCase {
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(8089);
 
-    private GitHubClient client = new GitHubClient("localhost", 8089, "http");
+    private final GitHubClient client = new GitHubClient("localhost", 8089, "http");
 
     @Before
     public void setup() throws IOException, URISyntaxException {
-        stubFor(get(urlPathEqualTo("/api/v3/orgs/testorg/teams"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(readSampleResponse("responses/gh-orgs-teams-response.json"))));
-
         stubFor(get(urlPathEqualTo("/api/v3/teams/1/members/lvydra"))
                 .willReturn(aResponse()
                         .withStatus(204)));
@@ -88,12 +82,6 @@ public class GitHubTeamServiceBeanTestCase {
     public void testWiremockResponses() throws Exception {
         CustomizedTeamService teamService = new CustomizedTeamService(client);
 
-        List<Team> organizationTeams = teamService.getTeams("testorg");
-        assertEquals(3, organizationTeams.size());
-        assertThat(organizationTeams)
-                .extracting("name")
-                .containsOnly("Team 1", "Team 2", "Team 3");
-
         assertTrue(teamService.isMember(1, "lvydra"));
         assertFalse(teamService.isMember(2, "lvydra"));
         assertTrue(teamService.isMember(3, "lvydra"));
@@ -113,7 +101,7 @@ public class GitHubTeamServiceBeanTestCase {
     public void testRemoveUsersFromTeam() throws Exception {
         GitHubTeamServiceBean bean = new GitHubTeamServiceBean(client);
 
-        bean.removeUserFromTeams("testorg", "lvydra");
+        bean.removeUserFromTeams(createOrganizationEntity(), "lvydra");
 
         verify(deleteRequestedFor(urlEqualTo("/api/v3/teams/1/members/lvydra")));
         verify(exactly(0), deleteRequestedFor(urlEqualTo("/api/v3/teams/2/members/lvydra")));
@@ -124,8 +112,28 @@ public class GitHubTeamServiceBeanTestCase {
     public void testGetAllTeamsMembers() throws Exception {
         GitHubTeamServiceBean bean = new GitHubTeamServiceBean(client);
 
-        Set<User> members = bean.getAllTeamsMembers("testorg");
+        Set<User> members = bean.getAllTeamsMembers(createOrganizationEntity());
         assertThat(members).extracting("login")
                 .containsOnly("bob", "ben");
+    }
+
+    private GitHubOrganization createOrganizationEntity() {
+        GitHubTeam team1 = new GitHubTeam();
+        team1.setGithubId(1);
+        team1.setName("Team 1");
+
+        GitHubTeam team2 = new GitHubTeam();
+        team2.setGithubId(2);
+        team2.setName("Team 2");
+
+        GitHubTeam team3 = new GitHubTeam();
+        team3.setGithubId(3);
+        team3.setName("Team 3");
+
+        GitHubOrganization org = new GitHubOrganization();
+        org.setName("testorg");
+        org.setTeams(Arrays.asList(team1, team2, team3));
+
+        return org;
     }
 }
