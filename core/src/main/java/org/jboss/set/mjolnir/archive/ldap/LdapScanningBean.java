@@ -1,10 +1,10 @@
 package org.jboss.set.mjolnir.archive.ldap;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.egit.github.core.Team;
 import org.eclipse.egit.github.core.User;
 import org.jboss.logging.Logger;
 import org.jboss.set.mjolnir.archive.domain.GitHubOrganization;
+import org.jboss.set.mjolnir.archive.domain.GitHubTeam;
 import org.jboss.set.mjolnir.archive.domain.RegisteredUser;
 import org.jboss.set.mjolnir.archive.domain.RemovalLog;
 import org.jboss.set.mjolnir.archive.domain.UserRemoval;
@@ -43,7 +43,7 @@ public class LdapScanningBean {
     private LdapDiscoveryBean ldapDiscoveryBean;
 
     @Inject
-    private GitHubTeamServiceBean gitHubBean;
+    private GitHubTeamServiceBean teamServiceBean;
 
     @Inject
     private RegisteredUserRepositoryBean userRepositoryBean;
@@ -121,7 +121,7 @@ public class LdapScanningBean {
 
         HashSet<User> users = new HashSet<>();
         for (GitHubOrganization organization : organizations) {
-            users.addAll(gitHubBean.getAllTeamsMembers(organization.getName()));
+            users.addAll(teamServiceBean.getAllTeamsMembers(organization));
         }
 
         return users.stream()
@@ -140,19 +140,19 @@ public class LdapScanningBean {
         return unregisteredMembers;
     }
 
-    public List<Team> getAllUsersTeams(String gitHubUser) throws IOException {
-        List<Team> memberTeams = new ArrayList<>();
+    public List<GitHubTeam> getAllUsersTeams(String gitHubUser) throws IOException {
+        List<GitHubTeam> memberTeams = new ArrayList<>();
 
         List<GitHubOrganization> organizations =
                 em.createNamedQuery(GitHubOrganization.FIND_ALL, GitHubOrganization.class).getResultList();
 
-        List<Team> allTeams = new ArrayList<>();
+        List<GitHubTeam> allTeams = new ArrayList<>();
         for (GitHubOrganization organization : organizations) {
-            allTeams.addAll(gitHubBean.getTeams(organization.getName()));
+            allTeams.addAll(organization.getTeams());
         }
 
-        for (Team team : allTeams) {
-            if (gitHubBean.isMember(gitHubUser, team))
+        for (GitHubTeam team : allTeams) {
+            if (teamServiceBean.isMember(gitHubUser, team))
                 memberTeams.add(team);
         }
 
