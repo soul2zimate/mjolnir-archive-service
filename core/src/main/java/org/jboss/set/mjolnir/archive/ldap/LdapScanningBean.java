@@ -194,7 +194,7 @@ public class LdapScanningBean {
     private Set<String> getExistingUserNamesToProcess() {
         List<UserRemoval> existingRemovalsToProcess =
                 em.createNamedQuery(UserRemoval.FIND_REMOVALS_TO_PROCESS, UserRemoval.class).getResultList();
-        return existingRemovalsToProcess.stream().map(UserRemoval::getUsername).collect(Collectors.toSet());
+        return existingRemovalsToProcess.stream().map(UserRemoval::getLdapUsername).collect(Collectors.toSet());
     }
 
     private void createUniqueUserRemoval(Set<String> existingUserNamesToProcess, String userName) {
@@ -203,7 +203,7 @@ public class LdapScanningBean {
         } else {
             logger.infof("Creating removal record for user %s", userName);
             UserRemoval removal = new UserRemoval();
-            removal.setUsername(userName);
+            removal.setLdapUsername(userName);
             em.persist(removal);
         }
     }

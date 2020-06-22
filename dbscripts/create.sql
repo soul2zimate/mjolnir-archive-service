@@ -7,7 +7,8 @@ create table user_removals (
     remove_on date,
     started timestamp,
     status varchar(255),
-    username varchar(255)
+    ldap_username varchar(255),
+    github_username varchar(255)
 );
 
 create sequence sq_repository_forks;

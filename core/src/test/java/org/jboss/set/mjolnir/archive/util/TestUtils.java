@@ -59,14 +59,19 @@ public final class TestUtils {
                 StandardCharsets.UTF_8.name());
     }
 
-    public static UserRemoval createUserRemoval(String user, Timestamp timeStarted, Timestamp timeCompleted, RemovalStatus status) throws NoSuchFieldException, IllegalAccessException {
+    public static UserRemoval createUserRemoval(String ldapName, Timestamp timeStarted, Timestamp timeCompleted, RemovalStatus status) throws NoSuchFieldException, IllegalAccessException {
+        return createUserRemoval(ldapName, null, timeStarted, timeCompleted, status);
+    }
+
+    public static UserRemoval createUserRemoval(String ldapName, String ghName, Timestamp timeStarted, Timestamp timeCompleted, RemovalStatus status) throws NoSuchFieldException, IllegalAccessException {
         Field completedField = UserRemoval.class.getDeclaredField("completed");
         completedField.setAccessible(true);
         Field statusField = UserRemoval.class.getDeclaredField("status");
         statusField.setAccessible(true);
 
         UserRemoval userRemoval = new UserRemoval();
-        userRemoval.setUsername(user);
+        userRemoval.setLdapUsername(ldapName);
+        userRemoval.setGithubUsername(ghName);
         userRemoval.setStarted(timeStarted);
 
         completedField.set(userRemoval, timeCompleted);

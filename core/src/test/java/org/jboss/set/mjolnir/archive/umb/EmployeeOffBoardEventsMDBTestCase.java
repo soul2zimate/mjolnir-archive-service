@@ -92,7 +92,7 @@ public class EmployeeOffBoardEventsMDBTestCase {
         List<UserRemoval> removals = findRemovalsQuery.getResultList();
         assertThat(removals.size()).isEqualTo(1);
         assertThat(removals)
-                .extracting("username")
+                .extracting("ldapUsername")
                 .containsOnly("lvydra");
     }
 }

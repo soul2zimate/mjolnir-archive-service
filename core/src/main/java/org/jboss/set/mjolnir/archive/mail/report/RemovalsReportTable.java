@@ -14,7 +14,8 @@ import static j2html.TagCreator.th;
 
 public class RemovalsReportTable implements ReportTable {
 
-    private static final String NAME_LABEL = "Username";
+    private static final String LDAP_NAME_LABEL = "LDAP Name";
+    private static final String GH_NAME_LABEL = "GH Name";
     private static final String CREATED_LABEL = "Created";
     private static final String STARTED_LABEL = "Started";
     private static final String STATUS_LABEL = "Status";
@@ -29,7 +30,8 @@ public class RemovalsReportTable implements ReportTable {
                 p("...performed during the last week").withStyle(Styles.SUB_HEADING_STYLE),
                 table().withStyle(Styles.TABLE_STYLE + Styles.TD_STYLE).with(
                         tr().with(
-                                th(NAME_LABEL).withStyle(Styles.TH_STYLE),
+                                th(LDAP_NAME_LABEL).withStyle(Styles.TH_STYLE),
+                                th(GH_NAME_LABEL).withStyle(Styles.TH_STYLE),
                                 th(CREATED_LABEL).withStyle(Styles.TH_STYLE),
                                 th(STARTED_LABEL).withStyle(Styles.TH_STYLE),
                                 th(STATUS_LABEL).withStyle(Styles.TH_STYLE)
@@ -43,7 +45,8 @@ public class RemovalsReportTable implements ReportTable {
         SimpleDateFormat noMillisFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
         return each(removals, removal -> tr(
-                td(removal.getUsername()).withStyle(Styles.TD_STYLE),
+                td(ReportUtils.stringOrEmpty(removal.getLdapUsername())).withStyle(Styles.TD_STYLE),
+                td(ReportUtils.stringOrEmpty(removal.getGithubUsername())).withStyle(Styles.TD_STYLE),
                 td(noMillisFormat.format(removal.getCreated())).withStyle(Styles.TD_STYLE),
                 td(noMillisFormat.format(removal.getStarted())).withStyle(Styles.TD_STYLE),
                 RemovalStatus.COMPLETED.equals(removal.getStatus()) ?

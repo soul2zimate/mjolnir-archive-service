@@ -25,5 +25,10 @@ public enum RemovalStatus {
     /**
      * The removal process failed.
      */
-    FAILED
+    FAILED,
+
+    /**
+     * Invalid removal record.
+     */
+    INVALID
 }
