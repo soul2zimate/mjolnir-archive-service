@@ -51,19 +51,23 @@ public class EmployeeOffBoardEventsMDB implements MessageListener {
         String event = jsonObject.getString("event");
 
         if (OFF_BOARD_EVENT.equals(event)) {
-            logger.infof("Received employee event of type %s", event);
-
             JSONObject person = jsonObject.getJSONObject("person");
             String kerberosName = person.getString("dn");
 
+            logger.infof("Received offboard event for user %s.", kerberosName);
+
             Optional<RegisteredUser> registeredUser = userRepositoryBean.findByKrbUsername(kerberosName);
-            registeredUser.ifPresent(user -> {
+            if (registeredUser.isPresent()) {
+                RegisteredUser user = registeredUser.get();
                 if (user.isWhitelisted()) {
-                    logger.infof("Skipping whitelisted user %s.", user.getGithubName());
+                    logger.infof("Skipping whitelisted user %s.", user.getKerberosName());
                 } else {
+                    logger.infof("Creating removal for user %s.", user.getKerberosName());
                     ldapScanningBean.createUserRemoval(user.getKerberosName());
                 }
-            });
+            } else {
+                logger.infof("User %s is not registered.", kerberosName);
+            }
         }
     }
 }
