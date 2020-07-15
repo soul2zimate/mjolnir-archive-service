@@ -5,11 +5,11 @@ import org.eclipse.egit.github.core.Repository;
 import org.jboss.logging.Logger;
 import org.jboss.set.mjolnir.archive.ArchivingBean;
 import org.jboss.set.mjolnir.archive.domain.GitHubTeam;
+import org.jboss.set.mjolnir.archive.domain.repositories.RemovalLogRepositoryBean;
 import org.jboss.set.mjolnir.archive.github.GitHubDiscoveryBean;
 import org.jboss.set.mjolnir.archive.github.GitHubTeamServiceBean;
 import org.jboss.set.mjolnir.archive.configuration.Configuration;
 import org.jboss.set.mjolnir.archive.domain.GitHubOrganization;
-import org.jboss.set.mjolnir.archive.domain.RemovalLog;
 import org.jboss.set.mjolnir.archive.domain.RemovalStatus;
 import org.jboss.set.mjolnir.archive.domain.RepositoryFork;
 import org.jboss.set.mjolnir.archive.domain.RegisteredUser;
@@ -50,6 +50,9 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
     @Inject
     private GitHubTeamServiceBean teamServiceBean;
 
+    @Inject
+    private RemovalLogRepositoryBean logRepositoryBean;
+
     @Override
     public String process() {
         // obtain list of users we want to remove the access rights from
@@ -68,7 +71,7 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
                 successful = false;
                 
                 // log error to db
-                logError(removal, "Failed to process removal: " + removal.toString(), e);
+                logRepositoryBean.logError(removal, "Failed to process removal: " + removal.toString(), e);
 
                 removal.setStatus(RemovalStatus.FAILED);
                 em.persist(removal);
@@ -147,7 +150,7 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
         } else {
             gitHubUsername = findGitHubUsername(removal.getLdapUsername());
             if (gitHubUsername == null) {
-                logMessage(removal, "Ignoring removal request for user " + removal.getLdapUsername());
+                logRepositoryBean.logMessage(removal, "Ignoring removal request for user " + removal.getLdapUsername());
 
                 removal.setStatus(RemovalStatus.UNKNOWN_USER);
                 em.persist(removal);
@@ -174,7 +177,7 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
                 logger.infof("Found following repositories to archive: %s",
                         repositoriesToArchive.stream().map(Repository::generateId).collect(Collectors.toList()));
             } catch (IOException e) {
-                logError(removal, "Couldn't obtain repositories for user " + gitHubUsername, e);
+                logRepositoryBean.logError(removal, "Couldn't obtain repositories for user " + gitHubUsername, e);
 
                 removal.setStatus(RemovalStatus.FAILED);
                 em.persist(removal);
@@ -199,7 +202,7 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
                 try {
                     archivingBean.createRepositoryMirror(repository);
                 } catch (Exception e) {
-                    logError(removal, "Couldn't archive repository: " + repository.getCloneUrl(), e);
+                    logRepositoryBean.logError(removal, "Couldn't archive repository: " + repository.getCloneUrl(), e);
 
                     removal.setStatus(RemovalStatus.FAILED);
                     em.persist(removal);
@@ -215,7 +218,7 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
                 try {
                     teamServiceBean.removeUserFromTeams(organization, gitHubUsername);
                 } catch (IOException e) {
-                    logError(removal, "Couldn't remove user membership from GitHub teams: " + gitHubUsername, e);
+                    logRepositoryBean.logError(removal, "Couldn't remove user membership from GitHub teams: " + gitHubUsername, e);
 
                     removal.setStatus(RemovalStatus.FAILED);
                     em.persist(removal);
@@ -231,27 +234,6 @@ public class MembershipRemovalBatchlet extends AbstractBatchlet {
         em.persist(removal);
         logger.infof("Removal batchlet completed successfully.");
         return true;
-    }
-
-    private void logMessage(UserRemoval removal, String message) {
-        logger.infof(message);
-
-        RemovalLog log = new RemovalLog();
-        log.setUserRemoval(removal);
-        log.setMessage(message);
-        em.persist(log);
-    }
-
-    private void logError(UserRemoval removal, String message, Throwable t) {
-        logger.errorf(t, message);
-
-        RemovalLog log = new RemovalLog();
-        log.setUserRemoval(removal);
-        log.setMessage(message);
-        if (t != null) {
-            log.setStackTrace(t);
-        }
-        em.persist(log);
     }
 
     static RepositoryFork createRepositoryFork(Repository repository) {
