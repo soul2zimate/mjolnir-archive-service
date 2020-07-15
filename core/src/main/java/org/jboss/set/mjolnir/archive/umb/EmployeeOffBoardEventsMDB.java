@@ -4,6 +4,7 @@ import org.jboss.ejb3.annotation.ResourceAdapter;
 import org.jboss.logging.Logger;
 import org.jboss.set.mjolnir.archive.domain.RegisteredUser;
 import org.jboss.set.mjolnir.archive.domain.repositories.RegisteredUserRepositoryBean;
+import org.jboss.set.mjolnir.archive.domain.repositories.RemovalLogRepositoryBean;
 import org.jboss.set.mjolnir.archive.ldap.LdapScanningBean;
 import org.json.JSONObject;
 
@@ -33,6 +34,9 @@ public class EmployeeOffBoardEventsMDB implements MessageListener {
     @Inject
     private LdapScanningBean ldapScanningBean;
 
+    @Inject
+    private RemovalLogRepositoryBean logRepositoryBean;
+
     public void onMessage(Message rcvMessage) {
         try {
             if (rcvMessage instanceof TextMessage) {
@@ -61,12 +65,15 @@ public class EmployeeOffBoardEventsMDB implements MessageListener {
                 RegisteredUser user = registeredUser.get();
                 if (user.isWhitelisted()) {
                     logger.infof("Skipping whitelisted user %s.", user.getKerberosName());
+                    logRepositoryBean.logMessage(String.format("Offboard event: Skipping whitelisted user %s.", user.getKerberosName()));
                 } else {
                     logger.infof("Creating removal for user %s.", user.getKerberosName());
+                    logRepositoryBean.logMessage(String.format("Offboard event: Creating removal for user %s.", user.getKerberosName()));
                     ldapScanningBean.createUserRemoval(user.getKerberosName());
                 }
             } else {
                 logger.infof("User %s is not registered.", kerberosName);
+                logRepositoryBean.logMessage(String.format("Offboard event: User %s is not registered.", kerberosName));
             }
         }
     }
