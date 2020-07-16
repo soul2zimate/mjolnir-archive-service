@@ -56,7 +56,7 @@ public class EmployeeOffBoardEventsMDB implements MessageListener {
 
         if (OFF_BOARD_EVENT.equals(event)) {
             JSONObject person = jsonObject.getJSONObject("person");
-            String kerberosName = person.getString("dn");
+            String kerberosName = person.getString("uid");
 
             logger.infof("Received offboard event for user %s.", kerberosName);
 
