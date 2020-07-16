@@ -19,7 +19,8 @@ import java.util.Optional;
 
 @MessageDriven(name = "EmployeeOffBoardEventsMDB", activationConfig = {
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-        @ActivationConfigProperty(propertyName = "destination", propertyValue = "Consumer.mjolnir.employees-events.VirtualTopic.services.enterprise-iam.integration.event"), // physical name
+        @ActivationConfigProperty(propertyName = "useJndi", propertyValue = "true"),
+        @ActivationConfigProperty(propertyName = "destination", propertyValue = "java:/queue/EmployeeEventsQueue"), // JNDI name
         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")})
 @ResourceAdapter(value = "activemq-rar.rar")
 public class EmployeeOffBoardEventsMDB implements MessageListener {
