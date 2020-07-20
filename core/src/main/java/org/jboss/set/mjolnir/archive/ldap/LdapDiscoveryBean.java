@@ -56,6 +56,38 @@ public class LdapDiscoveryBean {
     }
 
     /**
+     * Returns list of user UIDs - i.e. his current UID and all his prior UIDs.
+     * @param uid prior or current UID
+     * @return list of current and prior UIDs
+     */
+    public List<String> findAllUserUids(String uid) throws NamingException {
+        final NamingEnumeration<SearchResult> results =
+                ldapClient.search(configuration.getLdapSearchContext(),
+                        "(|(uid=" + uid + ")(rhatPriorUid=" + uid + "))");
+        if (results.hasMore()) {
+            ArrayList<String> uids = new ArrayList<>();
+
+            SearchResult searchResult = results.next();
+            String currentUid = (String) searchResult.getAttributes().get("uid").get();
+            uids.add(currentUid);
+
+            // add user's prior UIDs to the map of existing users
+            Attribute priorUidAttr = searchResult.getAttributes().get("rhatPriorUid");
+            if (priorUidAttr != null) {
+                NamingEnumeration<?> priorUids = priorUidAttr.getAll();
+                while (priorUids.hasMore()) {
+                    String priorUid = (String) priorUids.next();
+                    uids.add(priorUid);
+                }
+            }
+
+            return uids;
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Verifies which of given UIDs exists in LDAP database.
      *
      * Given names are looked for either in the uid or rhatPriorUid attributes. If an existing user has some rhatPriorUid
