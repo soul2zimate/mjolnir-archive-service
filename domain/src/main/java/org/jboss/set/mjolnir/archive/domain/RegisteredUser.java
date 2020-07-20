@@ -17,6 +17,7 @@ import javax.persistence.Table;
         @NamedQuery(name = RegisteredUser.FIND_ALL, query = "SELECT u FROM RegisteredUser u"),
         @NamedQuery(name = RegisteredUser.FIND_WHITELISTED, query = "SELECT u FROM RegisteredUser u WHERE u.whitelisted IS TRUE"),
         @NamedQuery(name = RegisteredUser.FIND_BY_KRB_NAME, query = "SELECT u FROM RegisteredUser u WHERE u.kerberosName = :krbName"),
+        @NamedQuery(name = RegisteredUser.FIND_BY_KRB_NAMES, query = "SELECT u FROM RegisteredUser u WHERE u.kerberosName in (:krbNames)"),
         @NamedQuery(name = RegisteredUser.FIND_BY_GITHUB_NAME, query = "SELECT u FROM RegisteredUser u WHERE LOWER(u.githubName) = LOWER(:githubName)")
 })
 @Entity
@@ -26,6 +27,7 @@ public class RegisteredUser {
     public static final String FIND_ALL = "RegisteredUser.findAll";
     public static final String FIND_WHITELISTED = "RegisteredUser.findWhitelisted";
     public static final String FIND_BY_KRB_NAME = "RegisteredUser.findByKrbName";
+    public static final String FIND_BY_KRB_NAMES = "RegisteredUser.findByKrbNames";
     public static final String FIND_BY_GITHUB_NAME = "RegisteredUser.findByGitHubName";
 
     @SuppressWarnings("unused")

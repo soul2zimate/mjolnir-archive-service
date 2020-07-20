@@ -5,6 +5,7 @@ import org.jboss.logging.Logger;
 import org.jboss.set.mjolnir.archive.domain.RegisteredUser;
 import org.jboss.set.mjolnir.archive.domain.repositories.RegisteredUserRepositoryBean;
 import org.jboss.set.mjolnir.archive.domain.repositories.RemovalLogRepositoryBean;
+import org.jboss.set.mjolnir.archive.ldap.LdapDiscoveryBean;
 import org.jboss.set.mjolnir.archive.ldap.LdapScanningBean;
 import org.json.JSONObject;
 
@@ -15,7 +16,10 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
-import java.util.Optional;
+import javax.naming.NamingException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @MessageDriven(name = "EmployeeOffBoardEventsMDB", activationConfig = {
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
@@ -38,6 +42,9 @@ public class EmployeeOffBoardEventsMDB implements MessageListener {
     @Inject
     private RemovalLogRepositoryBean logRepositoryBean;
 
+    @Inject
+    private LdapDiscoveryBean ldapDiscoveryBean;
+
     public void onMessage(Message rcvMessage) {
         try {
             if (rcvMessage instanceof TextMessage) {
@@ -51,30 +58,61 @@ public class EmployeeOffBoardEventsMDB implements MessageListener {
         }
     }
 
-    private void processMessage(String message) {
+    void processMessage(String message) {
         JSONObject jsonObject = new JSONObject(message);
         String event = jsonObject.getString("event");
 
         if (OFF_BOARD_EVENT.equals(event)) {
             JSONObject person = jsonObject.getJSONObject("person");
-            String kerberosName = person.getString("uid");
+            String currentUid = person.getString("uid");
 
-            logger.infof("Received offboard event for user %s.", kerberosName);
+            logger.infof("Received offboard event for user %s.", currentUid);
 
-            Optional<RegisteredUser> registeredUser = userRepositoryBean.findByKrbUsername(kerberosName);
-            if (registeredUser.isPresent()) {
-                RegisteredUser user = registeredUser.get();
+            HashSet<String> uids = new HashSet<>();
+            uids.add(currentUid);
+            try {
+                List<String> allUserUids = ldapDiscoveryBean.findAllUserUids(currentUid);
+                if (allUserUids != null) {
+                    uids.addAll(allUserUids);
+                }
+            } catch (NamingException e) {
+                logger.errorf("Couldn't obtain user UIDs from LDAP for user %s", currentUid);
+            }
+
+            List<RegisteredUser> registeredUsers = userRepositoryBean.findByKrbUsernames(uids);
+            if (registeredUsers.size() == 1) {
+                RegisteredUser user = registeredUsers.get(0);
                 if (user.isWhitelisted()) {
                     logger.infof("Skipping whitelisted user %s.", user.getKerberosName());
-                    logRepositoryBean.logMessage(String.format("Offboard event: Skipping whitelisted user %s.", user.getKerberosName()));
+                    logRepositoryBean.logMessage(String.format("Offboard event: Skipping whitelisted user %s.",
+                            user.getKerberosName()));
                 } else {
                     logger.infof("Creating removal for user %s.", user.getKerberosName());
-                    logRepositoryBean.logMessage(String.format("Offboard event: Creating removal for user %s.", user.getKerberosName()));
+                    logRepositoryBean.logMessage(String.format("Offboard event: Creating removal for user %s.",
+                            user.getKerberosName()));
                     ldapScanningBean.createUserRemoval(user.getKerberosName());
                 }
+            } else if (registeredUsers.size() == 0){
+                logger.infof("User %s is not registered.", currentUid);
+                logRepositoryBean.logMessage(String.format("Offboard event: User %s is not registered.", currentUid));
             } else {
-                logger.infof("User %s is not registered.", kerberosName);
-                logRepositoryBean.logMessage(String.format("Offboard event: User %s is not registered.", kerberosName));
+                // Several registered users found => do nothing, let the situation be verified by an admin.
+
+                // Hopefully corporate auth system doesn't allow users to pick UID that previously belonged to
+                // a different user. If that is true, this case would indicate that the same user has been registered
+                // several times, with different UIDs. In that case we should create removals for all UIDs that were
+                // found... Need to verify this.
+                //
+                // TODO: Could this situation be mitigated in the registration logic that would check if
+                //  an authenticated user is not registered with some of his prior UIDs? Currently we only look for
+                //  registered user by his current UID - which might not be the one he was previously registered with.
+                //  Also, the current registration logic would not allow user to register the same GH username twice.
+
+                String registeredUids = registeredUsers.stream().map(RegisteredUser::getKerberosName)
+                        .collect(Collectors.joining(", "));
+                logger.warnf("Found several registered users for UID %s: %s", currentUid, registeredUids);
+                logRepositoryBean.logMessage(String.format("Found several registered users for UID %s: %s", currentUid,
+                        registeredUids));
             }
         }
     }
