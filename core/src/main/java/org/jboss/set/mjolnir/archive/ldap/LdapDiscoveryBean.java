@@ -9,6 +9,7 @@ import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.SearchResult;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -83,7 +84,7 @@ public class LdapDiscoveryBean {
 
             return uids;
         } else {
-            return null;
+            return Collections.emptyList();
         }
     }
 
