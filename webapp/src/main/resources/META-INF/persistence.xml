@@ -17,6 +17,7 @@
             <property name="hibernate.jdbc.batch_size" value="50" />
             <property name="hibernate.order_updates" value="true"/>
             <property name="hibernate.jdbc.batch_versioned_data" value="true"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL94Dialect"/>
         </properties>
     </persistence-unit>
 </persistence>
