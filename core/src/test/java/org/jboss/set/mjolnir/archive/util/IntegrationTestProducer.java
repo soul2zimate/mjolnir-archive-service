@@ -34,6 +34,12 @@ public class IntegrationTestProducer {
         return new HibernatePersistenceProvider().createEntityManagerFactory("mjolnir-archive-service", properties);
     }
 
+    @SuppressWarnings("unused")
+    public void closeEntityManagerFactory(@Disposes EntityManagerFactory emf) {
+        if (emf.isOpen()) {
+            emf.close();
+        }
+    }
 
     @Produces
     @Singleton
