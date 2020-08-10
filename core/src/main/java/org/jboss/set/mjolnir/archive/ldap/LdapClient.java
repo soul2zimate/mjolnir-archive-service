@@ -13,8 +13,8 @@ import java.util.Hashtable;
  */
 public class LdapClient {
 
-    private SearchControls searchControls;
-    private String ldapUrl;
+    private final SearchControls searchControls;
+    private final String ldapUrl;
 
     public LdapClient(String ldapUrl) {
         this.ldapUrl = ldapUrl;
@@ -34,7 +34,10 @@ public class LdapClient {
         env.put("com.sun.jndi.ldap.connect.pool", "true"); // enable connection pooling, prevents "Connection closed" problems
 
         InitialDirContext ctx = new InitialDirContext(env);
-
-        return ctx.search(contextName, filter, searchControls);
+        try {
+            return ctx.search(contextName, filter, searchControls);
+        } finally {
+            ctx.close();
+        }
     }
 }

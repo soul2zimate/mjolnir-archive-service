@@ -1,9 +1,11 @@
 package org.jboss.mjolnir.archive.service.webapp;
 
 import org.hibernate.jpa.HibernatePersistenceProvider;
+import org.jboss.logging.Logger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.RequestScoped;
+import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -14,6 +16,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EntityManagerProducer {
+
+    private final Logger logger = Logger.getLogger(getClass().getName());
 
     /**
      * Make datasource available via CDI.
@@ -32,7 +36,9 @@ public class EntityManagerProducer {
         Map<String, String> properties = new HashMap<>();
         properties.put("hibernate.connection.datasource", Constants.DATASOURCE_JNDI_NAME);
 
-        return new HibernatePersistenceProvider().createEntityManagerFactory("mjolnir-archive-service", properties);
+        EntityManagerFactory emf = new HibernatePersistenceProvider().createEntityManagerFactory("mjolnir-archive-service", properties);
+        logger.debugf("Created emf %s", emf.toString());
+        return emf;
     }
 
     /**
@@ -43,7 +49,25 @@ public class EntityManagerProducer {
      */
     @Produces @RequestScoped
     EntityManager createEntityManager(EntityManagerFactory entityManagerFactory) {
-        return entityManagerFactory.createEntityManager();
+        EntityManager em = entityManagerFactory.createEntityManager();
+        logger.debugf("Created em %s", em.toString());
+        return em;
+    }
+
+    @SuppressWarnings("unused")
+    public void closeEntityManagerFactory(@Disposes EntityManagerFactory emf) {
+        logger.debugf("Closing emf %s", emf.toString());
+        if (emf.isOpen()) {
+            emf.close();
+        }
+    }
+
+    @SuppressWarnings("unused")
+    public void closeEntityManager(@Disposes EntityManager em) {
+        logger.debugf("Closing em %s", em.toString());
+        if (em.isOpen()) {
+            em.close();
+        }
     }
 
 }

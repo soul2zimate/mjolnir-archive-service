@@ -1,6 +1,7 @@
 package org.jboss.set.mjolnir.archive.util;
 
 import org.eclipse.egit.github.core.client.GitHubClient;
+import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.jboss.set.mjolnir.archive.ArchivingBean;
 import org.jboss.set.mjolnir.archive.configuration.Configuration;
 import org.jboss.set.mjolnir.archive.ldap.LdapDiscoveryBean;
@@ -11,7 +12,7 @@ import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 import javax.persistence.EntityManager;
-import javax.persistence.Persistence;
+import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -22,15 +23,28 @@ import java.util.Map;
  * Produces beans for unit testing purposes.
  */
 @Alternative
-public class UnitTestProducer {
+public class IntegrationTestProducer {
 
     @Produces
     @Singleton
-    public EntityManager createEntityManager() {
+    EntityManagerFactory createEntityManagerFactory() {
         Map<String, String> properties = new HashMap<>();
         properties.put("javax.persistence.transactionType", "RESOURCE_LOCAL");
         properties.put("hibernate.show_sql", "true");
-        return Persistence.createEntityManagerFactory("mjolnir-archive-service", properties).createEntityManager();
+        return new HibernatePersistenceProvider().createEntityManagerFactory("mjolnir-archive-service", properties);
+    }
+
+    @SuppressWarnings("unused")
+    public void closeEntityManagerFactory(@Disposes EntityManagerFactory emf) {
+        if (emf.isOpen()) {
+            emf.close();
+        }
+    }
+
+    @Produces
+    @Singleton
+    public EntityManager createEntityManager(EntityManagerFactory emf) {
+        return emf.createEntityManager();
     }
 
     @SuppressWarnings("unused")

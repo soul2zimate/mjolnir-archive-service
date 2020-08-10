@@ -183,12 +183,8 @@ public class LdapScanningBean {
     }
 
     public void createUserRemoval(String krbName) {
-        em.getTransaction().begin();
-
         Set<String> existingUserNamesToProcess = getExistingUserNamesToProcess();
         createUniqueUserRemoval(existingUserNamesToProcess, krbName);
-
-        em.getTransaction().commit();
     }
 
     private Set<String> getExistingUserNamesToProcess() {
