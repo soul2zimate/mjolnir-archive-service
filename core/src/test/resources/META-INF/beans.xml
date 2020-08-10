@@ -5,6 +5,6 @@
       http://xmlns.jcp.org/xml/ns/javaee/beans_1_1.xsd" bean-discovery-mode="all">
 
     <alternatives>
-        <class>org.jboss.set.mjolnir.archive.util.UnitTestProducer</class>
+        <class>org.jboss.set.mjolnir.archive.util.IntegrationTestProducer</class>
     </alternatives>
 </beans>

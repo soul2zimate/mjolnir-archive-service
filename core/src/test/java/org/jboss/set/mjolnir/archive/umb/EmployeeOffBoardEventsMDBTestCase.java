@@ -78,7 +78,9 @@ public class EmployeeOffBoardEventsMDBTestCase {
         person.put("dn", "uid=lvydra,dc=test");
         eIAMMessage.put("person", person);
 
+        em.getTransaction().begin();
         employeeOffBoardEventsMDB.processMessage(eIAMMessage.toString());
+        em.getTransaction().commit();
 
         eIAMMessage = new JSONObject();
         eIAMMessage.put("event", "offboard");
@@ -88,7 +90,9 @@ public class EmployeeOffBoardEventsMDBTestCase {
         person.put("dn", "uid=joe,dc=test");
         eIAMMessage.put("person", person);
 
+        em.getTransaction().begin();
         employeeOffBoardEventsMDB.processMessage(eIAMMessage.toString());
+        em.getTransaction().commit();
 
         eIAMMessage = new JSONObject();
         eIAMMessage.put("event", "update");
@@ -98,7 +102,9 @@ public class EmployeeOffBoardEventsMDBTestCase {
         person.put("dn", "uid=bruno,dc=test");
         eIAMMessage.put("person", person);
 
+        em.getTransaction().begin();
         employeeOffBoardEventsMDB.processMessage(eIAMMessage.toString());
+        em.getTransaction().commit();
 
         TypedQuery<UserRemoval> findRemovalsQuery = em.createNamedQuery(UserRemoval.FIND_REMOVALS_TO_PROCESS, UserRemoval.class);
         List<UserRemoval> removals = findRemovalsQuery.getResultList();
@@ -133,7 +139,9 @@ public class EmployeeOffBoardEventsMDBTestCase {
         person.put("dn", "uid=lvydra,dc=test");
         eIAMMessage.put("person", person);
 
+        em.getTransaction().begin();
         employeeOffBoardEventsMDB.processMessage(eIAMMessage.toString());
+        em.getTransaction().commit();
 
         TypedQuery<UserRemoval> findRemovalsQuery = em.createNamedQuery(UserRemoval.FIND_REMOVALS_TO_PROCESS, UserRemoval.class);
         List<UserRemoval> removals = findRemovalsQuery.getResultList();
@@ -167,7 +175,9 @@ public class EmployeeOffBoardEventsMDBTestCase {
         person.put("dn", "uid=lvydra,dc=test");
         eIAMMessage.put("person", person);
 
+        em.getTransaction().begin();
         employeeOffBoardEventsMDB.processMessage(eIAMMessage.toString());
+        em.getTransaction().commit();
 
         TypedQuery<UserRemoval> findRemovalsQuery = em.createNamedQuery(UserRemoval.FIND_REMOVALS_TO_PROCESS, UserRemoval.class);
         List<UserRemoval> removals = findRemovalsQuery.getResultList();

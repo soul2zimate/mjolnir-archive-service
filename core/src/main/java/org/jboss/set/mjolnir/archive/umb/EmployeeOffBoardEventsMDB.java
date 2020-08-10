@@ -17,6 +17,9 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
 import javax.naming.NamingException;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,16 +48,34 @@ public class EmployeeOffBoardEventsMDB implements MessageListener {
     @Inject
     private LdapDiscoveryBean ldapDiscoveryBean;
 
+    @Inject
+    private EntityManagerFactory emf;
+
     public void onMessage(Message rcvMessage) {
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = null;
+
         try {
-            if (rcvMessage instanceof TextMessage) {
-                TextMessage textMessage = (TextMessage) rcvMessage;
-                processMessage(textMessage.getText());
-            } else {
-                logger.warnf("Message of wrong type: %s", rcvMessage.getClass().getName());
+            transaction = em.getTransaction();
+            transaction.begin();
+
+            try {
+                if (rcvMessage instanceof TextMessage) {
+                    TextMessage textMessage = (TextMessage) rcvMessage;
+                    processMessage(textMessage.getText());
+                } else {
+                    logger.warnf("Message of wrong type: %s", rcvMessage.getClass().getName());
+                }
+            } catch (JMSException e) {
+                throw new RuntimeException(e);
             }
-        } catch (JMSException e) {
-            throw new RuntimeException(e);
+
+            transaction.commit();
+        } finally {
+            if (transaction != null && transaction.isActive()) {
+                transaction.commit();
+            }
+            em.close();
         }
     }
 
