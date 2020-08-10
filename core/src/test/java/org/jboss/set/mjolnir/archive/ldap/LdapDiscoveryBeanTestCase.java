@@ -35,7 +35,7 @@ public class LdapDiscoveryBeanTestCase {
         Mockito.when(ldapClientMock.search(Mockito.anyString(), Mockito.anyString()))
                 .thenReturn(new ResultEnumeration(Collections.emptyIterator()));
 
-        ldapDiscoveryBean.checkUserExists("tom");
+        assertThat(ldapDiscoveryBean.checkUserExists("tom")).isFalse();
 
         Mockito.verify(ldapClientMock).search(baseCaptor.capture(), filterCaptor.capture());
         assertThat(baseCaptor.getValue()).isEqualTo("context");

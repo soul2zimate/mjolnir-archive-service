@@ -51,9 +51,11 @@ public class LdapDiscoveryBean {
         final NamingEnumeration<SearchResult> results =
                 ldapClient.search(configuration.getLdapSearchContext(),
                         "(|(uid=" + uid + ")(rhatPriorUid=" + uid + "))");
-        final boolean found = results.hasMore();
-        results.close();
-        return found;
+        try {
+            return results.hasMore();
+        } finally {
+            results.close();
+        }
     }
 
     /**
@@ -65,26 +67,30 @@ public class LdapDiscoveryBean {
         final NamingEnumeration<SearchResult> results =
                 ldapClient.search(configuration.getLdapSearchContext(),
                         "(|(uid=" + uid + ")(rhatPriorUid=" + uid + "))");
-        if (results.hasMore()) {
-            ArrayList<String> uids = new ArrayList<>();
+        try {
+            if (results.hasMore()) {
+                ArrayList<String> uids = new ArrayList<>();
 
-            SearchResult searchResult = results.next();
-            String currentUid = (String) searchResult.getAttributes().get("uid").get();
-            uids.add(currentUid);
+                SearchResult searchResult = results.next();
+                String currentUid = (String) searchResult.getAttributes().get("uid").get();
+                uids.add(currentUid);
 
-            // add user's prior UIDs to the map of existing users
-            Attribute priorUidAttr = searchResult.getAttributes().get("rhatPriorUid");
-            if (priorUidAttr != null) {
-                NamingEnumeration<?> priorUids = priorUidAttr.getAll();
-                while (priorUids.hasMore()) {
-                    String priorUid = (String) priorUids.next();
-                    uids.add(priorUid);
+                // add user's prior UIDs to the map of existing users
+                Attribute priorUidAttr = searchResult.getAttributes().get("rhatPriorUid");
+                if (priorUidAttr != null) {
+                    NamingEnumeration<?> priorUids = priorUidAttr.getAll();
+                    while (priorUids.hasMore()) {
+                        String priorUid = (String) priorUids.next();
+                        uids.add(priorUid);
+                    }
                 }
-            }
 
-            return uids;
-        } else {
-            return Collections.emptyList();
+                return uids;
+            } else {
+                return Collections.emptyList();
+            }
+        } finally {
+            results.close();
         }
     }
 
@@ -127,26 +133,29 @@ public class LdapDiscoveryBean {
         final NamingEnumeration<SearchResult> searchResults =
                 ldapClient.search(configuration.getLdapSearchContext(), query.toString());
 
-        // fill the result map with found users
         final Map<String, Boolean> result = new HashMap<>();
-        while (searchResults.hasMore()) {
-            final SearchResult record = searchResults.next();
+        try {
+            // fill the result map with found users
+            while (searchResults.hasMore()) {
+                final SearchResult record = searchResults.next();
 
-            // add user's UID to the map of existing users
-            String uid = (String) record.getAttributes().get("uid").get();
-            result.put(uid, true);
+                // add user's UID to the map of existing users
+                String uid = (String) record.getAttributes().get("uid").get();
+                result.put(uid, true);
 
-            // add user's prior UIDs to the map of existing users
-            Attribute priorUidAttr = record.getAttributes().get("rhatPriorUid");
-            if (priorUidAttr != null) {
-                NamingEnumeration<?> priorUids = priorUidAttr.getAll();
-                while (priorUids.hasMore()) {
-                    String priorUid = (String) priorUids.next();
-                    result.put(priorUid, true);
+                // add user's prior UIDs to the map of existing users
+                Attribute priorUidAttr = record.getAttributes().get("rhatPriorUid");
+                if (priorUidAttr != null) {
+                    NamingEnumeration<?> priorUids = priorUidAttr.getAll();
+                    while (priorUids.hasMore()) {
+                        String priorUid = (String) priorUids.next();
+                        result.put(priorUid, true);
+                    }
                 }
             }
+        } finally {
+            searchResults.close();
         }
-        searchResults.close();
 
         // fill the result map with users that weren't found
         for (String uid : users) {
