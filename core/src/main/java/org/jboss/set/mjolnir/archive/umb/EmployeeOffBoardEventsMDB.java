@@ -18,7 +18,6 @@ import javax.jms.MessageListener;
 import javax.jms.TextMessage;
 import javax.naming.NamingException;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import java.util.HashSet;
 import java.util.List;
@@ -49,10 +48,9 @@ public class EmployeeOffBoardEventsMDB implements MessageListener {
     private LdapDiscoveryBean ldapDiscoveryBean;
 
     @Inject
-    private EntityManagerFactory emf;
+    private EntityManager em;
 
     public void onMessage(Message rcvMessage) {
-        EntityManager em = emf.createEntityManager();
         EntityTransaction transaction = null;
 
         try {
