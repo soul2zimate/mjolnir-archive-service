@@ -10,18 +10,25 @@ Once the notification is received, repository forks belonging to given user are 
 Build a WAR with maven:
 
 ```
-mvn clean install
+mvn clean package
 ```
 
 WAR will be created in `webapp/target/` directory.
+
+## Database preparation
+
+Initialize your database with SQL scripts in `dbscripts/` directory:
+
+* `dbscripts/create.sql`
+* `dbscripts/load.sql`
 
 ## Deployment
 
 You can deploy the app in any Java EE 8 / Jakarta EE 8 compliant application server. Configuration samples provided here are for JBoss EAP / Wildfly.
 
-The server must have a datasource with JNDI name "java:jboss/datasources/mjolnir/MjolnirDS" configured.
+Start with default `standalone-full.xml`.
 
-Datasource example:
+Configure a datasource with JNDI name "java:jboss/datasources/mjolnir/MjolnirDS". Example for a local H2 database:
 
 ```
                 <datasource jndi-name="java:jboss/datasources/mjolnir/MjolnirDS" pool-name="MjolnirDS">
@@ -34,11 +41,24 @@ Datasource example:
                 </datasource>
 ```
 
-The server also needs to configure a resource adapter for connecting to the UMB.
+Configure a resource adapter for connecting to the UMB messaging service:
 
-Resource adapter example:
-
+```xml
+    ...
+    </extensions>
+    <system-properties>
+        <property name="UMBServerUrl" value="failover:(ssl://server01:61616,ssl://server02:61616)?jms.rmIdFromConnectionId=true&amp;maxReconnectAttempts=0&amp;reconnectSupported=false&amp;updateURIsSupported=false&amp;priorityBackup=false"/>
+        <property name="UMBQueueName" value="QueueName"/>
+        <property name="UMBKeyStore" value="/etc/eap-secret-volume/umb.keystore"/>
+        <property name="UMBKeyStorePassword" value=""/>
+        <property name="UMBTrustStore" value="/etc/eap-secret-volume/umb.truststore"/>
+        <property name="UMBTrustStorePassword" value=""/>
+    </system-properties>
+    <management>
+    ...
 ```
+
+```xml
         <subsystem xmlns="urn:jboss:domain:resource-adapters:5.0">
             <resource-adapters>
                 <resource-adapter id="activemq-rar.rar">
