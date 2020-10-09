@@ -22,11 +22,13 @@ Initialize your database with SQL scripts in `dbscripts/` directory:
 * `dbscripts/create.sql`
 * `dbscripts/load.sql`
 
-## Deployment
+## App Server Configuration and Deployment
 
-You can deploy the app in any Java EE 8 / Jakarta EE 8 compliant application server. Configuration samples provided here are for JBoss EAP / Wildfly.
+You can deploy the app in any Java EE 8 / Jakarta EE 8 compliant application server. Configuration described here is for JBoss EAP / Wildfly.
 
 Start with default `standalone-full.xml`.
+
+### Datasource
 
 Configure a datasource with JNDI name "java:jboss/datasources/mjolnir/MjolnirDS". Example for a local H2 database:
 
@@ -40,6 +42,8 @@ Configure a datasource with JNDI name "java:jboss/datasources/mjolnir/MjolnirDS"
                     </security>
                 </datasource>
 ```
+
+### Resource Adapters Subsystem
 
 Configure a resource adapter for connecting to the UMB messaging service:
 
@@ -120,6 +124,20 @@ Configure a resource adapter for connecting to the UMB messaging service:
                 </resource-adapter>
             </resource-adapters>
         </subsystem>
+```
+
+### ActiveMQ Resource Adapter
+
+Download the resource adapter rar file from <https://maven.repository.redhat.com/ga/org/apache/activemq/activemq-rar/5.11.0.redhat-630446/activemq-rar-5.11.0.redhat-630446.rar>. Rename it to `activemq-rar.rar` and place it into the application server deployment directory, or deploy it manually from CLI after the application server is started.
+
+### Start the Application Server
+
+Copy the `mjolnir-archive-service-webapp.war` file from `webapp/target/` to the application server deployment directory.
+
+Start the application server:
+
+```
+./standalone.sh -c standalone-full.xml
 ```
 
 ## Triggering Tasks
