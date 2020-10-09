@@ -50,9 +50,9 @@ Configure a resource adapter for connecting to the UMB messaging service:
         <property name="UMBServerUrl" value="failover:(ssl://server01:61616,ssl://server02:61616)?jms.rmIdFromConnectionId=true&amp;maxReconnectAttempts=0&amp;reconnectSupported=false&amp;updateURIsSupported=false&amp;priorityBackup=false"/>
         <property name="UMBQueueName" value="QueueName"/>
         <property name="UMBKeyStore" value="/etc/eap-secret-volume/umb.keystore"/>
-        <property name="UMBKeyStorePassword" value=""/>
+        <property name="UMBKeyStorePassword" value="12345"/>
         <property name="UMBTrustStore" value="/etc/eap-secret-volume/umb.truststore"/>
-        <property name="UMBTrustStorePassword" value=""/>
+        <property name="UMBTrustStorePassword" value="12345"/>
     </system-properties>
     <management>
     ...
