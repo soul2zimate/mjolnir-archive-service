@@ -1,3 +1,5 @@
+TEST
+
 # mjolnir-archive-service
 
 Service for removing user memberships in GitHub organizations and archiving repositories of those users.
